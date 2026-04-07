@@ -1,0 +1,171 @@
+{
+  "$meta": {
+    "name": "M12 Draft (Library Context)",
+    "version": "0.1",
+    "generated": "2026-03-06",
+    "notes": "Component-first; All-variations view; optional blocks marked; exactly one variation per instance (simulation only in Instance Preview)."
+  },
+
+  "modules": [
+    {
+      "id": "CG-M12",
+      "title": "Module M12 — Marine Perils",
+      "classOfBusiness": "Marine Hull",
+      "jurisdiction": ["UK"],
+      "tags": ["CBAA","Perils"],
+      "components": [
+        {
+          "id": "C12.1",
+          "title": "Institute Time Clauses – Hulls",
+          "status": "published",
+          "version": "5.1.0",
+          "variations": ["A","B","C"],
+          "optionalBlocks": 3,
+          "governingVariablesUsed": ["territory","authorityStatus"],
+          "embeddedVariables": ["VESSEL_NAME","SUM_INSURED"],
+          "definedTerms": ["ASSURED","SCHEDULE"],
+          "references": [
+            { "type": "document", "targetId": "ADOC-lma-5400-pdf", "label": "Schedule (PDF)" }
+          ],
+          "children": [
+            {
+              "id": "C12.1.1",
+              "title": "War & Strikes Clause",
+              "status": "published",
+              "version": "3.0.0",
+              "variations": ["A","B","C"],
+              "optionalBlocks": 1,
+              "governingVariablesUsed": ["territory"],
+              "embeddedVariables": ["VESSEL_NAME"],
+              "definedTerms": ["ASSURED"],
+              "references": [
+                { "type": "component", "targetId": "C12.3", "label": "War Exclusion" }
+              ],
+              "children": []
+            },
+            {
+              "id": "C12.1.2",
+              "title": "Notice Period",
+              "status": "published",
+              "version": "2.2.0",
+              "variations": ["A","B","C"],
+              "optionalBlocks": 0,
+              "governingVariablesUsed": ["territory","noticeDays"],
+              "embeddedVariables": ["NOTICE_DAYS"],
+              "definedTerms": ["NOTICE"],
+              "references": [],
+              "children": []
+            }
+          ]
+        },
+        {
+          "id": "C12.2",
+          "title": "Additional Perils",
+          "status": "draft",
+          "version": "0.1.0",
+          "variations": ["A","B"],
+          "optionalBlocks": 2,
+          "governingVariablesUsed": ["territory"],
+          "embeddedVariables": ["LIMIT_AMOUNT"],
+          "definedTerms": [],
+          "references": [],
+          "children": []
+        },
+        {
+          "id": "C12.3",
+          "title": "War Exclusion",
+          "status": "published",
+          "version": "4.1.0",
+          "variations": ["A"],
+          "optionalBlocks": 0,
+          "governingVariablesUsed": [],
+          "embeddedVariables": [],
+          "definedTerms": ["WAR"],
+          "references": [],
+          "children": []
+        },
+        {
+          "id": "C12.T1",
+          "title": "Perils Matrix (Table)",
+          "status": "published",
+          "version": "1.0.0",
+          "typeHint": "table",
+          "variations": ["A"],
+          "optionalBlocks": 0,
+          "columns": [
+            { "id": "col-code", "name": "Peril Code", "type": "text" },
+            { "id": "col-name", "name": "Peril Name", "type": "text" },
+            { "id": "col-covered", "name": "Covered (Y/N)", "type": "boolean" }
+          ],
+          "sampleRows": [
+            ["WP", "War Perils", false],
+            ["SP", "Strikes Perils", true]
+          ],
+          "embeddedVariables": [],
+          "definedTerms": [],
+          "references": [],
+          "children": []
+        }
+      ]
+    }
+  ],
+
+  "documents": [
+    {
+      "id": "ADOC-lma-5400-pdf",
+      "title": "LMA5400 Marine Hull Policy (PDF)",
+      "mimeType": "application/pdf",
+      "openBehavior": "link",
+      "url": "https://example.org/docs/LMA5400.pdf"
+    }
+  ],
+
+  "governance": {
+    "variables": [
+      {
+        "key": "territory",
+        "label": "Territory",
+        "type": "enum",
+        "scope": "global",
+        "lovRef": "lov-territories",
+        "values": ["UK","EU","Global"]
+      },
+      {
+        "key": "authorityStatus",
+        "label": "Authority Status",
+        "type": "enum",
+        "scope": "global",
+        "values": ["Approved","Pending","Suspended"]
+      },
+      {
+        "key": "noticeDays",
+        "label": "Notice (days)",
+        "type": "number",
+        "scope": "local"
+      }
+    ],
+    "metadataRequirementGroups": [
+      {
+        "id": "MRG-marine-default",
+        "name": "Marine default",
+        "requiredFields": ["classOfBusiness","jurisdiction","owner"]
+      }
+    ]
+  },
+
+  "rendering": {
+    "legend": {
+      "variations": ["A","B","C"],
+      "optional": true,
+      "referenceStyle": "blue+bold",
+      "embeddedStyle": "red",
+      "definedTermsStyle": "uppercase"
+    },
+    "tokens": {
+      "text.reference": "var(--lma.color.text.reference)",
+      "text.embedded": "var(--lma.color.text.embedded)",
+      "optional.block": "var(--lma.color.optional.block)",
+      "variant.badge": "var(--lma.color.variant.badge)"
+    }
+  }
+}

@@ -1,0 +1,272 @@
+{
+  "$meta": {
+    "name": "WOL Document Hierarchy (Prototype)",
+    "version": "1.0",
+    "generated": "2026-03-06",
+    "notes": "Component-first model. Contracts are optional containers. Components are recursive (no separate sub-component type). Rules are stored with components but evaluated by builders; exactly one variation (A/B/C) is active per instance."
+  },
+
+  "hierarchy": {
+    "nodeTypes": [
+      "contract",
+      "component-group",
+      "component",
+      "data-element",
+      "analogue-document",
+      "governance.variable",
+      "governance.metadata-requirement-group"
+    ],
+    "allowedChildren": {
+      "contract": ["component-group"],
+      "component-group": ["component"],
+      "component": ["component", "content-block", "data-element"],
+      "data-element": [],
+      "analogue-document": [],
+      "governance.variable": [],
+      "governance.metadata-requirement-group": []
+    },
+    "listableInRepository": [
+      "contract",
+      "component-group",
+      "component",
+      "data-element",
+      "analogue-document"
+    ],
+    "recursive": ["component"]
+  },
+
+  "types": {
+    "contract": {
+      "idPattern": "CON-{slug}",
+      "required": ["id", "title", "status", "version", "classOfBusiness"],
+      "optional": ["jurisdiction", "owner", "description", "tags", "createdAt", "updatedAt"],
+      "children": "component-group[]",
+      "statusEnum": ["draft", "awaiting-approval", "approved", "published", "archived"],
+      "example": {
+        "id": "CON-marine-hull",
+        "title": "LMA5400 Marine Hull Policy",
+        "status": "published",
+        "version": "3.2.0",
+        "classOfBusiness": "Marine Hull",
+        "jurisdiction": "UK",
+        "owner": "r.pyke",
+        "componentGroups": ["CG-marine-perils", "CG-clauses-hull"]
+      }
+    },
+
+    "component-group": {
+      "idPattern": "CG-{code}",
+      "required": ["id", "title", "status"],
+      "optional": ["moduleCode", "classOfBusiness", "jurisdiction", "owner", "description", "tags", "createdAt", "updatedAt"],
+      "children": "component[]",
+      "example": {
+        "id": "CG-marine-perils",
+        "title": "Marine Perils Group",
+        "status": "published",
+        "moduleCode": "M12",
+        "components": ["C12.1", "C12.2"]
+      }
+    },
+
+    "component": {
+      "idPattern": "C{module}.{ordinal}[.{ordinal}...]",
+      "required": ["id", "title", "status"],
+      "optional": [
+        "classOfBusiness",
+        "jurisdiction",
+        "owner",
+        "description",
+        "tags",
+        "createdAt",
+        "updatedAt",
+        "whereUsed[]"
+      ],
+      "children": [
+        "component[]",
+        "content-block[]",
+        "data-element[]"
+      ],
+      "rules": {
+        "governingVariables": [
+          {
+            "key": "territory",
+            "type": "enum",
+            "valuesRef": "lov-territories",
+            "scope": "global|group|local"
+          }
+        ],
+        "optionality": [
+          {
+            "target": "block-id",
+            "condition": "territory IN ['UK','Global']"
+          }
+        ]
+      },
+      "variations": [
+        { "id": "A", "label": "Variation A", "contentRef": "content-block-id-A" },
+        { "id": "B", "label": "Variation B", "contentRef": "content-block-id-B" },
+        { "id": "C", "label": "Variation C", "contentRef": "content-block-id-C" }
+      ],
+      "metadataRequirementGroupId": "MRG-default",
+      "versioning": {
+        "currentVersion": "5.1.0",
+        "history": ["5.0.0", "4.2.0"],
+        "variants": ["C12.1@variant-uk"]
+      },
+      "example": {
+        "id": "C12.1",
+        "title": "Institute Time Clauses – Hulls",
+        "status": "published",
+        "classOfBusiness": "Marine Hull",
+        "children": ["C12.1.1", "cbk-intro", "de-var-vesselName"],
+        "variations": ["A", "B", "C"],
+        "metadataRequirementGroupId": "MRG-marine-default",
+        "whereUsed": ["CG-marine-perils", "CON-marine-hull"]
+      }
+    },
+
+    "content-block": {
+      "idPattern": "cbk-{slug}",
+      "kinds": ["rich-text", "table"],
+      "richText": "<p>Markup with references, defined terms, embedded variables…</p>",
+      "table": {
+        "columns": ["col-1", "col-2"],
+        "rows": [[ "value-1", "value-2" ]]
+      }
+    },
+
+    "data-element": {
+      "idPattern": "de-{type}-{slug}",
+      "kinds": [
+        "embedded-variable",
+        "defined-term-ref",
+        "referenced-object-ref",
+        "table-structure"
+      ],
+      "shape": {
+        "embedded-variable": {
+          "name": "NoticePeriodDays",
+          "valueType": "number|string|date",
+          "lovRef": "lov-None|lov-persons|lov-addresses"
+        },
+        "defined-term-ref": { "termId": "DT-..."},
+        "referenced-object-ref": { "targetType": "component|table|document", "targetId": "..." },
+        "table-structure": { "role": "header|row|cell", "path": "tbl-1/r2/c3" }
+      },
+      "example": {
+        "id": "de-embedded-vesselName",
+        "kind": "embedded-variable",
+        "name": "Vessel Name",
+        "valueType": "string"
+      }
+    },
+
+    "analogue-document": {
+      "idPattern": "ADOC-{slug}",
+      "required": ["id", "title", "mimeType", "status"],
+      "optional": ["classOfBusiness", "owner", "filesize", "storageUrl", "createdAt", "updatedAt"],
+      "openBehavior": "link|download",
+      "example": {
+        "id": "ADOC-lma-5400-pdf",
+        "title": "LMA5400 Marine Hull Policy (PDF)",
+        "mimeType": "application/pdf",
+        "status": "published",
+        "openBehavior": "link",
+        "storageUrl": "https://.../LMA5400.pdf"
+      }
+    },
+
+    "governance.variable": {
+      "idPattern": "GOV-{key}",
+      "fields": ["key", "label", "type", "scope", "lovRef?"],
+      "example": {
+        "key": "territory",
+        "label": "Territory",
+        "type": "enum",
+        "scope": "global",
+        "lovRef": "lov-territories"
+      }
+    },
+
+    "governance.metadata-requirement-group": {
+      "idPattern": "MRG-{slug}",
+      "fields": ["id", "name", "requiredFields[]", "rules?"],
+      "example": {
+        "id": "MRG-marine-default",
+        "name": "Marine default",
+        "requiredFields": ["classOfBusiness", "jurisdiction", "owner"]
+      }
+    }
+  },
+
+  "renderingConventions": {
+    "definedTerms": { "transform": "uppercase", "weight": "regular", "colorToken": "text.default" },
+    "references": { "weight": "bold", "colorToken": "text.reference" },
+    "embeddedVariables": { "weight": "regular", "colorToken": "text.embedded" },
+    "optionalBlocks": { "backgroundToken": "optional.block" },
+    "variationBadge": { "values": ["A", "B", "C"], "colorToken": "variant.badge" },
+    "recursiveNumbering": "C12.1 → C12.1.1 → C12.1.1.1"
+  },
+
+  "exampleTrees": [
+    {
+      "label": "Contract-based composition (library context)",
+      "type": "contract",
+      "id": "CON-marine-hull",
+      "title": "LMA5400 Marine Hull Policy",
+      "componentGroups": [
+        {
+          "type": "component-group",
+          "id": "CG-marine-perils",
+          "title": "Marine Perils Group",
+          "components": [
+            {
+              "type": "component",
+              "id": "C12.1",
+              "title": "Institute Time Clauses – Hulls",
+              "children": [
+                {
+                  "type": "component",
+                  "id": "C12.1.1",
+                  "title": "War & Strikes Clause",
+                  "children": [
+                    { "type": "content-block", "id": "cbk-intro", "kind": "rich-text" },
+                    { "type": "data-element", "id": "de-embedded-vesselName", "kind": "embedded-variable", "name": "Vessel Name" }
+                  ],
+                  "variations": ["A", "B", "C"]
+                }
+              ],
+              "variations": ["A", "B", "C"]
+            }
+          ]
+        }
+      ],
+      "attachments": [
+        {
+          "type": "analogue-document",
+          "id": "ADOC-lma-5400-pdf",
+          "title": "LMA5400 Marine Hull Policy (PDF)"
+        }
+      ]
+    },
+    {
+      "label": "Group-only navigation (no contract root)",
+      "type": "component-group",
+      "id": "CG-clauses-hull",
+      "title": "Hull Clauses",
+      "components": [
+        { "type": "component", "id": "C12.3", "title": "Deductible Clause (Cargo)", "variations": ["A", "B"] }
+      ]
+    },
+    {
+      "label": "Standalone component",
+      "type": "component",
+      "id": "C99.1",
+      "title": "Navigation Limits Clause",
+      "children": [
+        { "type": "content-block", "id": "cbk-body", "kind": "rich-text" }
+      ],
+      "variations": ["A"]
+    }
+  ]
+}

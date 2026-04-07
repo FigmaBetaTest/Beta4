@@ -1,0 +1,25 @@
+@import './fonts.css';
+@import './tailwind.css';
+@import './theme.css';
+
+/* Sonner toast branding overrides */
+[data-sonner-toast] [data-icon] svg {
+  color: #C5143D !important;
+}
+
+[data-sonner-toast][data-type="error"] [data-icon] svg {
+  color: #C5143D !important;
+}
+
+[data-sonner-toast][data-type="success"] [data-icon] svg {
+  color: #C5143D !important;
+}
+
+[data-sonner-toast][data-type="info"] [data-icon] svg {
+  color: #1F1F1F !important;
+}
+
+[data-sonner-toast] [data-close-button] {
+  border: none !important;
+  color: #6b7280 !important;
+}
