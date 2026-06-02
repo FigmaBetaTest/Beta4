@@ -128,6 +128,7 @@ export function FoundationEditor() {
   const existingItem = dynamicFoundationItems.find(i => i.id === id);
   const typeParam = searchParams.get('type') as FoundationType | null;
   const itemType: FoundationType = existingItem?.type ?? typeParam ?? 'DEF';
+  const targetTab = itemType === 'DM' ? 'metadata' : 'foundations';
   const typeLabel = foundationTypeLabels[itemType];
   const bodyLabel = BODY_LABELS[itemType];
   const titlePlaceholder = TITLE_PLACEHOLDERS[itemType];
@@ -233,7 +234,7 @@ export function FoundationEditor() {
     setIsDirty(false);
     setItemStatus('DRAFT');
     toast.success(`${typeLabel} saved as Draft`);
-    navigate('/?tab=foundations');
+    navigate(`/?tab=${targetTab}`);
   };
 
   const handleSubmit = () => {
@@ -243,10 +244,10 @@ export function FoundationEditor() {
     }
     setItemStatus('PENDING_APPROVAL');
     toast.success(`${typeLabel} submitted`, { description: 'Sent for approval.' });
-    navigate('/?tab=foundations');
+    navigate(`/?tab=${targetTab}`);
   };
 
-  const handleGoBack = () => navigate('/?tab=foundations');
+  const handleGoBack = () => navigate(`/?tab=${targetTab}`);
 
   const handleCreate = () => {
     const today = new Date().toISOString().split('T')[0];
@@ -268,7 +269,7 @@ export function FoundationEditor() {
       });
     }
     toast.success(`${typeLabel} created`, { description: 'Submitted for approval.' });
-    navigate('/?tab=foundations');
+    navigate(`/?tab=${targetTab}`);
   };
 
   const inputStyle =
@@ -640,7 +641,7 @@ export function FoundationEditor() {
           {!isViewMode && (
           <div className="flex items-center justify-between mt-8">
             <button
-              onClick={() => navigate('/?tab=foundations')}
+              onClick={() => navigate(`/?tab=${targetTab}`)}
               className="px-[40px] py-[8px] text-[14px] bg-[#F2F2F2] text-[#1F1F1F] hover:bg-white transition-all duration-200 cursor-pointer"
               style={{ borderRadius: '0px', fontFamily: 'var(--font-family)' }}
             >

@@ -8,13 +8,14 @@ import { MetaKV } from './meta-kv';
 
 type SortKey = 'name' | 'type' | 'status' | 'classOfBusiness' | 'version' | 'lastModified' | 'owner';
 type SortDir = 'asc' | 'desc';
-type RepoTab = 'objects' | 'foundations';
+type RepoTab = 'objects' | 'foundations' | 'metadata';
 
 export function RepositoryPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const tabParam = searchParams.get('tab');
   const [activeTab, setActiveTab] = useState<RepoTab>(
-    searchParams.get('tab') === 'foundations' ? 'foundations' : 'objects'
+    tabParam === 'foundations' ? 'foundations' : tabParam === 'metadata' ? 'metadata' : 'objects'
   );
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRow, setSelectedRow] = useState<RepositoryItem | null>(null);
@@ -107,7 +108,7 @@ export function RepositoryPage() {
 
   // Foundations computed + handlers
   const filteredFoundations = useMemo(() => {
-    let items = localFoundItems;
+    let items = localFoundItems.filter(i => i.type !== 'DM');
     if (foundSearch) {
       const q = foundSearch.toLowerCase();
       items = items.filter(i => i.name.toLowerCase().includes(q) || i.type.toLowerCase().includes(q));
@@ -126,6 +127,26 @@ export function RepositoryPage() {
     }
     return items;
   }, [foundSearch, foundTypeFilter, foundStatusFilter, foundSegmentFilter, foundOwnerFilter, foundSortKey, foundSortDir, localFoundItems]);
+
+  const filteredMetadataFoundations = useMemo(() => {
+    let items = localFoundItems.filter(i => i.type === 'DM');
+    if (foundSearch) {
+      const q = foundSearch.toLowerCase();
+      items = items.filter(i => i.name.toLowerCase().includes(q) || i.type.toLowerCase().includes(q));
+    }
+    if (foundStatusFilter) items = items.filter(i => i.status === foundStatusFilter);
+    if (foundSegmentFilter) items = items.filter(i => i.segment === foundSegmentFilter);
+    if (foundOwnerFilter) items = items.filter(i => i.owner === foundOwnerFilter);
+    if (foundSortKey) {
+      items = [...items].sort((a, b) => {
+        const aVal = String(a[foundSortKey] ?? '').toLowerCase();
+        const bVal = String(b[foundSortKey] ?? '').toLowerCase();
+        const cmp = aVal.localeCompare(bVal);
+        return foundSortDir === 'asc' ? cmp : -cmp;
+      });
+    }
+    return items;
+  }, [foundSearch, foundStatusFilter, foundSegmentFilter, foundOwnerFilter, foundSortKey, foundSortDir, localFoundItems]);
 
   const handleFoundSort = (key: keyof FoundationItem) => {
     if (foundSortKey === key) setFoundSortDir(prev => prev === 'asc' ? 'desc' : 'asc');
@@ -151,6 +172,13 @@ export function RepositoryPage() {
     if (selectedFoundRow?.id === item.id) setSelectedFoundRow(null);
     toast.success(`${item.name} deleted`);
   };
+
+  const isMetadataTab = activeTab === 'metadata';
+  const isFoundationTab = activeTab === 'foundations' || activeTab === 'metadata';
+  const activeFoundationRows = isMetadataTab ? filteredMetadataFoundations : filteredFoundations;
+  const activeFoundationItems = isMetadataTab
+    ? localFoundItems.filter(i => i.type === 'DM')
+    : localFoundItems.filter(i => i.type !== 'DM');
 
   return (
     <div className="flex h-full overflow-hidden">
@@ -183,13 +211,21 @@ export function RepositoryPage() {
             >
               Foundations
             </button>
+            <button
+              role="tab"
+              aria-selected={activeTab === 'metadata'}
+              onClick={() => setActiveTab('metadata')}
+              className={`px-4 py-2 text-[13px] border-b-2 transition-colors ${activeTab === 'metadata' ? 'border-[#C5143D] text-[#C5143D]' : 'border-transparent text-[#6b7280] hover:text-[#1F1F1F]'}`}
+            >
+              Metadata
+            </button>
           </div>
 
           {/* Objects Search & Filter Bar */}
           {activeTab === 'objects' && (
             <>
               <div className="flex items-center gap-3 mb-4">
-                <div className="flex-1 flex items-center gap-2 bg-white border border-[#d1d5db] px-3 py-2" style={{ borderRadius: '0px' }}>
+                <div className="w-[300px] max-w-full flex items-center gap-2 bg-white border border-[#d1d5db] px-3 py-2" style={{ borderRadius: '0px' }}>
                   <Search size={15} className="text-[#6b7280]" />
                   <input
                     type="text"
@@ -203,6 +239,7 @@ export function RepositoryPage() {
                     <button onClick={() => setSearchQuery('')}><X size={14} className="text-[#6b7280]" /></button>
                   )}
                 </div>
+                <div className="ml-auto flex items-center gap-3">
                 <button
                   onClick={() => setShowFacets(!showFacets)}
                   className={`flex items-center gap-1.5 px-[40px] py-[8px] text-[14px] transition-all duration-200 cursor-pointer ${
@@ -219,8 +256,9 @@ export function RepositoryPage() {
                   onClick={() => setShowCreateDialog(true)}
                 >
                   <Plus size={14} />
-                  Create Object
+                  Create
                 </button>
+                </div>
               </div>
 
               {/* Object Facet Panel */}
@@ -241,14 +279,14 @@ export function RepositoryPage() {
           )}
 
           {/* Foundations Search & Filter Bar */}
-          {activeTab === 'foundations' && (
+          {isFoundationTab && (
             <>
               <div className="flex items-center gap-3 mb-4">
-                <div className="flex-1 flex items-center gap-2 bg-white border border-[#d1d5db] px-3 py-2" style={{ borderRadius: '0px' }}>
+                <div className="w-[300px] max-w-full flex items-center gap-2 bg-white border border-[#d1d5db] px-3 py-2" style={{ borderRadius: '0px' }}>
                   <Search size={15} className="text-[#6b7280]" />
                   <input
                     type="text"
-                    placeholder="Search foundations..."
+                    placeholder={isMetadataTab ? 'Search metadata foundations...' : 'Search foundations...'}
                     className="flex-1 bg-transparent text-[14px] text-[#1F1F1F] placeholder:text-[#9ca3af] outline-none border-none"
                     style={{ fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: '14px' }}
                     value={foundSearch}
@@ -258,6 +296,7 @@ export function RepositoryPage() {
                     <button onClick={() => setFoundSearch('')}><X size={14} className="text-[#6b7280]" /></button>
                   )}
                 </div>
+                <div className="ml-auto flex items-center gap-3">
                 <button
                   onClick={() => setShowFoundFacets(!showFoundFacets)}
                   className={`flex items-center gap-1.5 px-[40px] py-[8px] text-[14px] transition-all duration-200 cursor-pointer ${
@@ -271,11 +310,15 @@ export function RepositoryPage() {
                 <button
                   className="bg-[#C5143D] text-white px-[40px] py-[8px] text-[14px] flex items-center gap-1.5 hover:bg-[#F2F2F2] hover:text-[#C5143D] transition-all duration-200 cursor-pointer"
                   style={{ borderRadius: '0px' }}
-                  onClick={() => setShowCreateFoundDialog(true)}
+                  onClick={() => {
+                    if (isMetadataTab) navigate('/foundation-editor/new?type=DM&isNew=true');
+                    else setShowCreateFoundDialog(true);
+                  }}
                 >
                   <Plus size={14} />
-                  Create Foundation
+                  Create
                 </button>
+                </div>
               </div>
 
               {/* Foundation Facet Panel */}
@@ -285,7 +328,8 @@ export function RepositoryPage() {
                   statusFilter={foundStatusFilter}
                   segmentFilter={foundSegmentFilter}
                   ownerFilter={foundOwnerFilter}
-                  items={localFoundItems}
+                  items={activeFoundationItems}
+                  availableTypes={isMetadataTab ? ['DM'] : ['DEF', 'GV', 'LOV', 'TEC', 'SYS']}
                   onTypeChange={setFoundTypeFilter}
                   onStatusChange={setFoundStatusFilter}
                   onSegmentChange={setFoundSegmentFilter}
@@ -403,18 +447,25 @@ export function RepositoryPage() {
           )}
 
             {/* Foundations Table */}
-            {activeTab === 'foundations' && (
+            {isFoundationTab && (
               <>
-                {filteredFoundations.length === 0 ? (
+                {activeFoundationRows.length === 0 ? (
                   <div className="flex-1 flex flex-col items-center justify-center text-center p-12 border border-dashed border-[#d1d5db] bg-white">
                     <BookOpen size={32} className="text-[#d1d5db] mb-3" />
-                    <p className="text-[14px] text-[#6b7280] mb-1">No Foundations yet.</p>
-                    <p className="text-[13px] text-[#9ca3af]">Create a Definition, Governing Variable, LOV, Technical or System Guidance.</p>
+                    <p className="text-[14px] text-[#6b7280] mb-1">{isMetadataTab ? 'No Metadata Foundations yet.' : 'No Foundations yet.'}</p>
+                    <p className="text-[13px] text-[#9ca3af]">
+                      {isMetadataTab
+                        ? 'Create Descriptive Metadata objects for contracts and components.'
+                        : 'Create a Definition, Governing Variable, LOV, Technical or System Guidance.'}
+                    </p>
                     <button
-                      onClick={() => setShowCreateFoundDialog(true)}
+                      onClick={() => {
+                        if (isMetadataTab) navigate('/foundation-editor/new?type=DM&isNew=true');
+                        else setShowCreateFoundDialog(true);
+                      }}
                       className="mt-4 bg-[#C5143D] text-white px-5 py-2 text-[13px] flex items-center gap-1.5 hover:bg-[#F2F2F2] hover:text-[#C5143D] transition-all duration-200"
                     >
-                      <Plus size={13} /> Create Foundation
+                      <Plus size={13} /> Create
                     </button>
                   </div>
                 ) : (
@@ -459,7 +510,7 @@ export function RepositoryPage() {
                         </tr>
                       </thead>
                       <tbody>
-                        {filteredFoundations.map((item) => (
+                        {activeFoundationRows.map((item) => (
                           <tr
                             key={item.id}
                             onClick={() => setSelectedFoundRow(selectedFoundRow?.id === item.id ? null : item)}
@@ -492,9 +543,9 @@ export function RepositoryPage() {
                 )}
 
                 {/* Foundations Pagination */}
-                {filteredFoundations.length > 0 && (
+                {activeFoundationRows.length > 0 && (
                   <div className="flex items-center justify-between py-3">
-                    <span className="text-[12px] text-[#6b7280]">Showing 1–{filteredFoundations.length} of {filteredFoundations.length}</span>
+                    <span className="text-[12px] text-[#6b7280]">Showing 1–{activeFoundationRows.length} of {activeFoundationRows.length}</span>
                     <div className="flex items-center gap-1">
                       <button className="p-1.5 hover:bg-[#F2F2F2]"><ChevronLeft size={14} className="text-[#6b7280]" /></button>
                       <button className="px-2.5 py-1 bg-[#C5143D] text-white text-[12px]">1</button>
@@ -519,7 +570,7 @@ export function RepositoryPage() {
       )}
 
       {/* Foundations Quick Preview Panel */}
-      {activeTab === 'foundations' && selectedFoundRow && (
+      {isFoundationTab && selectedFoundRow && (
         <FoundationQuickPreviewPanel
           item={selectedFoundRow}
           onClose={() => setSelectedFoundRow(null)}
@@ -544,6 +595,7 @@ export function RepositoryPage() {
       {/* Create Foundation Dialog */}
       {showCreateFoundDialog && (
         <CreateFoundationDialog
+          allowedTypes={['DEF', 'GV', 'LOV', 'TEC', 'SYS']}
           onClose={() => setShowCreateFoundDialog(false)}
           onCreate={(newItem) => {
             setShowCreateFoundDialog(false);
@@ -621,6 +673,7 @@ function FoundationRowActions({ item, onView, onEdit, onWithdraw, onDelete }: {
 
 function FoundationFacetPanel({
   typeFilter, statusFilter, segmentFilter, ownerFilter, items,
+  availableTypes,
   onTypeChange, onStatusChange, onSegmentChange, onOwnerChange, onClose,
 }: {
   typeFilter: FoundationType | '';
@@ -628,13 +681,14 @@ function FoundationFacetPanel({
   segmentFilter: string;
   ownerFilter: string;
   items: FoundationItem[];
+  availableTypes?: FoundationType[];
   onTypeChange: (v: FoundationType | '') => void;
   onStatusChange: (v: ItemStatus | '') => void;
   onSegmentChange: (v: string) => void;
   onOwnerChange: (v: string) => void;
   onClose: () => void;
 }) {
-  const types: FoundationType[] = ['DEF', 'GV', 'LOV', 'DM', 'TEC', 'SYS'];
+  const types: FoundationType[] = availableTypes ?? ['DEF', 'GV', 'LOV', 'DM', 'TEC', 'SYS'];
   const statuses: ItemStatus[] = ['DRAFT', 'PENDING_APPROVAL', 'PUBLISHED', 'ARCHIVED', 'WITHDRAWN'];
   const segments = Array.from(new Set(items.map(i => i.segment).filter(Boolean))) as string[];
   const owners = Array.from(new Set(items.map(i => i.owner)));
@@ -757,9 +811,10 @@ const FOUNDATION_TYPE_OPTIONS: { value: FoundationType; label: string; descripti
   { value: 'SYS', label: 'System Guidance', description: 'Operational or process-level guidance' },
 ];
 
-function CreateFoundationDialog({ onClose, onCreate }: {
+function CreateFoundationDialog({ onClose, onCreate, allowedTypes }: {
   onClose: () => void;
   onCreate: (item: FoundationItem) => void;
+  allowedTypes?: FoundationType[];
 }) {
   const [step, setStep] = useState<1 | 2>(1);
   const [selectedType, setSelectedType] = useState<FoundationType | null>(null);
@@ -794,6 +849,7 @@ function CreateFoundationDialog({ onClose, onCreate }: {
 
   const inputStyle = "w-full bg-white text-[14px] text-[#1F1F1F] px-[12px] py-[8px] outline-none border border-[#d1d5db] transition-colors focus:border-[#2563eb]";
   const labelStyle = "text-[12px] text-[#6b7280] mb-1.5 block";
+  const selectableOptions = FOUNDATION_TYPE_OPTIONS.filter(opt => !allowedTypes || allowedTypes.includes(opt.value));
 
   return (
     <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
@@ -830,7 +886,7 @@ function CreateFoundationDialog({ onClose, onCreate }: {
                 style={{ borderRadius: '0px', fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: '14px' }}
               >
                 <option value="">Select a foundation type...</option>
-                {FOUNDATION_TYPE_OPTIONS.map(opt => (
+                {selectableOptions.map(opt => (
                   <option key={opt.value} value={opt.value}>{opt.value} — {opt.label}</option>
                 ))}
               </select>
@@ -932,7 +988,7 @@ function CreateFoundationDialog({ onClose, onCreate }: {
                 }`}
                 style={{ borderRadius: '0px' }}
               >
-                <Plus size={13} /> Create Foundation
+                <Plus size={13} /> Create
               </button>
             )}
             {/* Guidance step 1: Continue */}
@@ -962,7 +1018,7 @@ function CreateFoundationDialog({ onClose, onCreate }: {
                 }`}
                 style={{ borderRadius: '0px' }}
               >
-                <Plus size={13} /> Create Foundation
+                <Plus size={13} /> Create
               </button>
             )}
           </div>
@@ -1945,7 +2001,7 @@ function CreateComponentDialog({ onClose, onCreate }: {
                 }`}
                 style={{ borderRadius: '0px' }}
               >
-                <Plus size={13} /> Create Object
+                <Plus size={13} /> Create
               </button>
             )}
           </div>
