@@ -10,11 +10,24 @@ const navItems = [
   { to: '/approvals', label: 'Approvals', icon: CheckSquare },
 ];
 
+type SidebarMode = 'expanded' | 'tablet' | 'collapsed';
+
 export function RepositoryLayoutShell() {
   const [showNotifications, setShowNotifications] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarMode, setSidebarMode] = useState<SidebarMode>('expanded');
   const location = useLocation();
   const params = useParams();
+
+  const isSidebarCollapsed = sidebarMode === 'collapsed';
+  const isSidebarTablet = sidebarMode === 'tablet';
+
+  const cycleSidebarMode = () => {
+    setSidebarMode((prev) => {
+      if (prev === 'expanded') return 'tablet';
+      if (prev === 'tablet') return 'collapsed';
+      return 'expanded';
+    });
+  };
 
   const isApprovals = location.pathname === '/approvals';
 
@@ -77,28 +90,28 @@ export function RepositoryLayoutShell() {
     {
       id: 'n1',
       type: 'approve' as const,
-      title: 'Component Approved',
-      message: 'War & Strikes Clause v2.3.1 has been approved by R. Pyke.',
+      itemName: 'War & Strikes Clause',
       time: '2 hours ago',
+      historyId: 'hist-001',
     },
     {
       id: 'n2',
       type: 'reject' as const,
-      title: 'Component Rejected',
-      message: 'Navigation Limits Clause v2.0.0 has been rejected by R. Pyke. Rationale: "Geographical scope needs to include Baltic Sea exclusion zone per updated sanctions list."',
+      itemName: 'Deductible Clause (Cargo)',
       time: '5 hours ago',
+      historyId: 'hist-003',
     },
   ];
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-background text-foreground" style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}>
+    <div className="flex h-screen w-screen overflow-hidden bg-background text-foreground" style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
       {/* Left Sidebar — dark per design system secondary #1F1F1F */}
-      <aside className={`${sidebarCollapsed ? 'w-[56px] min-w-[56px]' : 'w-[220px] min-w-[220px]'} bg-sidebar border-r border-sidebar-border flex flex-col transition-all duration-200`}>
+      <aside className={`${isSidebarCollapsed ? 'w-[56px] min-w-[56px]' : isSidebarTablet ? 'w-[120px] min-w-[120px]' : 'w-[220px] min-w-[220px]'} bg-sidebar border-r border-sidebar-border flex flex-col transition-all duration-200`}>
         {/* Logo area */}
-        <div className={`${sidebarCollapsed ? 'p-2 pb-1' : 'p-4 pb-2'}`}>
-          <div className={`flex items-center justify-center py-2 ${sidebarCollapsed ? 'px-0' : ''}`}>
-            {sidebarCollapsed ? (
-              <div className="w-[32px] h-[31px]">
+        <div className={`${isSidebarCollapsed ? 'p-2 pb-1' : isSidebarTablet ? 'p-3 pb-2' : 'p-4 pb-2'}`}>
+          <div className={`flex items-center justify-center py-2 ${isSidebarCollapsed ? 'px-0' : ''}`}>
+            {isSidebarCollapsed || isSidebarTablet ? (
+              <div className={isSidebarTablet ? 'w-[44px] h-[43px]' : 'w-[32px] h-[31px]'}>
                 <svg className="block w-full h-full" fill="none" preserveAspectRatio="xMidYMid meet" viewBox="0 0 32 31.2586">
                   <path d={svgPaths.p7060570} fill="white" />
                   <path d={svgPaths.p1e481500} fill="#C5143D" />
@@ -166,8 +179,8 @@ export function RepositoryLayoutShell() {
         </div>
 
         {/* Navigation */}
-        <nav className={`flex-1 ${sidebarCollapsed ? 'px-1.5' : 'px-3'} py-4`}>
-          {!sidebarCollapsed && (
+        <nav className={`flex-1 ${isSidebarCollapsed ? 'px-1.5' : isSidebarTablet ? 'px-2' : 'px-3'} py-4`}>
+          {!isSidebarCollapsed && !isSidebarTablet && (
             <p className="text-[11px] uppercase tracking-wider text-sidebar-foreground/40 mb-2 px-2">Pages</p>
           )}
           <ul className="space-y-0.5">
@@ -176,17 +189,17 @@ export function RepositoryLayoutShell() {
                 <NavLink
                   to={item.to}
                   end={item.to === '/'}
-                  title={sidebarCollapsed ? item.label : undefined}
+                  title={isSidebarCollapsed ? item.label : undefined}
                   className={({ isActive }) =>
-                    `flex items-center ${sidebarCollapsed ? 'justify-center px-0 py-2' : 'gap-2.5 px-3 py-2'} text-[13px] transition-colors ${
+                    `flex items-center ${isSidebarCollapsed ? 'justify-center px-0 py-2' : isSidebarTablet ? 'flex-col justify-center gap-1 px-2 py-3' : 'gap-2.5 px-3 py-2'} ${isSidebarTablet ? 'text-[11px]' : 'text-[13px]'} transition-colors ${
                       isActive
                         ? 'bg-[#C5143D] text-white'
                         : 'text-sidebar-foreground/80 hover:bg-sidebar-accent'
                     }`
                   }
                 >
-                  <item.icon size={15} />
-                  {!sidebarCollapsed && item.label}
+                  <item.icon size={isSidebarTablet ? 20 : 15} />
+                  {!isSidebarCollapsed && item.label}
                 </NavLink>
               </li>
             ))}
@@ -194,24 +207,24 @@ export function RepositoryLayoutShell() {
         </nav>
 
         {/* Bottom section: Notifications, Logout, Collapse toggle */}
-        <div className={`${sidebarCollapsed ? 'px-1.5' : 'px-3'} pb-3 space-y-0.5`}>
+        <div className={`${isSidebarCollapsed ? 'px-1.5' : isSidebarTablet ? 'px-2' : 'px-3'} pb-3 space-y-0.5`}>
           {/* Notification Bell */}
           <div className="relative">
             <button
-              className={`flex items-center ${sidebarCollapsed ? 'justify-center w-full px-0 py-2' : 'gap-2.5 w-full px-3 py-2'} text-[13px] text-sidebar-foreground/80 hover:bg-sidebar-accent transition-colors relative`}
+              className={`flex items-center ${isSidebarCollapsed ? 'justify-center w-full px-0 py-2' : isSidebarTablet ? 'flex-col justify-center gap-1 w-full px-2 py-3' : 'gap-2.5 w-full px-3 py-2'} ${isSidebarTablet ? 'text-[11px]' : 'text-[13px]'} text-sidebar-foreground/80 hover:bg-sidebar-accent transition-colors relative`}
               onClick={() => setShowNotifications(!showNotifications)}
-              title={sidebarCollapsed ? 'Notifications' : undefined}
+              title={isSidebarCollapsed ? 'Notifications' : undefined}
             >
-              <Bell size={15} />
-              {!sidebarCollapsed && <span>Notifications</span>}
-              <span className={`w-2 h-2 bg-[#C5143D] rounded-full ${sidebarCollapsed ? 'absolute top-1.5 right-1.5' : 'ml-auto'}`} />
+              <Bell size={isSidebarTablet ? 20 : 15} />
+              {!isSidebarCollapsed && <span>Notifications</span>}
+              <span className={`w-2 h-2 bg-[#C5143D] rounded-full ${isSidebarCollapsed ? 'absolute top-1.5 right-1.5' : isSidebarTablet ? 'absolute top-2 right-2' : 'ml-auto'}`} />
             </button>
             {showNotifications && (
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setShowNotifications(false)} />
                 <div
                   className="absolute left-full bottom-0 ml-1 w-[380px] bg-white border border-[#d1d5db] shadow-lg z-50"
-                  style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}
+                  style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}
                 >
                   <div className="flex items-center justify-between px-4 py-2.5 border-b border-[#d1d5db]">
                     <span className="text-[13px] text-[#1F1F1F]">Notifications</span>
@@ -219,18 +232,25 @@ export function RepositoryLayoutShell() {
                   </div>
                   <div className="max-h-[320px] overflow-y-auto">
                     {notifications.map((n) => (
-                      <div key={n.id} className="px-4 py-3 border-b border-[#f0f0f0] hover:bg-[#FAFAFA] transition-colors">
+                      <Link
+                        key={n.id}
+                        to={`/approvals?tab=history&historyId=${n.historyId}`}
+                        onClick={() => setShowNotifications(false)}
+                        className="block px-4 py-3 border-b border-[#f0f0f0] hover:bg-[#FAFAFA] transition-colors"
+                      >
                         <div className="flex items-center gap-2 mb-1">
                           {n.type === 'approve' ? (
                             <span className="flex items-center justify-center w-5 h-5 bg-emerald-50 text-emerald-600"><Check size={12} /></span>
                           ) : (
                             <span className="flex items-center justify-center w-5 h-5 bg-red-50 text-[#C5143D]"><X size={12} /></span>
                           )}
-                          <span className="text-[13px] text-[#1F1F1F]">{n.title}</span>
+                          <span className="text-[13px] text-[#1F1F1F]">{n.itemName}</span>
+                          <span className={`text-[11px] ${n.type === 'approve' ? 'text-emerald-700' : 'text-[#C5143D]'}`}>
+                            {n.type === 'approve' ? 'Approved' : 'Rejected'}
+                          </span>
                           <span className="ml-auto text-[10px] text-[#9ca3af]">{n.time}</span>
                         </div>
-                        <p className="text-[12px] text-[#6b7280] ml-7 leading-relaxed">{n.message}</p>
-                      </div>
+                      </Link>
                     ))}
                   </div>
                 </div>
@@ -240,11 +260,11 @@ export function RepositoryLayoutShell() {
 
           {/* Logout */}
           <button
-            className={`flex items-center ${sidebarCollapsed ? 'justify-center w-full px-0 py-2' : 'gap-2.5 w-full px-3 py-2'} text-[13px] text-sidebar-foreground/80 hover:bg-sidebar-accent transition-colors`}
-            title={sidebarCollapsed ? 'Log Out' : undefined}
+            className={`flex items-center ${isSidebarCollapsed ? 'justify-center w-full px-0 py-2' : isSidebarTablet ? 'flex-col justify-center gap-1 w-full px-2 py-3' : 'gap-2.5 w-full px-3 py-2'} ${isSidebarTablet ? 'text-[11px]' : 'text-[13px]'} text-sidebar-foreground/80 hover:bg-sidebar-accent transition-colors`}
+            title={isSidebarCollapsed ? 'Log Out' : undefined}
           >
-            <LogOut size={15} />
-            {!sidebarCollapsed && <span>Log Out</span>}
+            <LogOut size={isSidebarTablet ? 20 : 15} />
+            {!isSidebarCollapsed && <span>Log Out</span>}
           </button>
 
           {/* Divider */}
@@ -252,12 +272,12 @@ export function RepositoryLayoutShell() {
 
           {/* Collapse / Expand toggle */}
           <button
-            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            className={`flex items-center ${sidebarCollapsed ? 'justify-center w-full px-0 py-2' : 'gap-2.5 w-full px-3 py-2'} text-[13px] text-sidebar-foreground/80 hover:bg-sidebar-accent transition-colors`}
-            title={sidebarCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
+            onClick={cycleSidebarMode}
+            className={`flex items-center ${isSidebarCollapsed ? 'justify-center w-full px-0 py-2' : isSidebarTablet ? 'flex-col justify-center gap-1 w-full px-2 py-3' : 'gap-2.5 w-full px-3 py-2'} ${isSidebarTablet ? 'text-[11px]' : 'text-[13px]'} text-sidebar-foreground/80 hover:bg-sidebar-accent transition-colors`}
+            title={isSidebarCollapsed ? 'Expand Sidebar' : isSidebarTablet ? 'Collapse Sidebar' : 'Tablet Sidebar'}
           >
-            {sidebarCollapsed ? <PanelLeftOpen size={15} /> : <PanelLeftClose size={15} />}
-            {!sidebarCollapsed && <span>Collapse</span>}
+            {isSidebarCollapsed ? <PanelLeftOpen size={isSidebarTablet ? 20 : 15} /> : <PanelLeftClose size={isSidebarTablet ? 20 : 15} />}
+            {!isSidebarCollapsed && <span>{isSidebarTablet ? 'Collapse' : 'Tablet'}</span>}
           </button>
         </div>
       </aside>

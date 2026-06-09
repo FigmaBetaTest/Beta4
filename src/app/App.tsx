@@ -10,7 +10,7 @@ export default function App() {
         position="top-center"
         toastOptions={{
           style: {
-            fontFamily: 'DMSans, system-ui, sans-serif',
+            fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif",
             fontSize: '13px',
             borderRadius: '0px',
             border: '1px solid #d1d5db',

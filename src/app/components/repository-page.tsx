@@ -231,7 +231,7 @@ export function RepositoryPage() {
                     type="text"
                     placeholder="Search for names or objects"
                     className="flex-1 bg-transparent text-[14px] text-[#1F1F1F] placeholder:text-[#9ca3af] outline-none border-none"
-                    style={{ fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: '14px' }}
+                    style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: '14px' }}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
@@ -288,7 +288,7 @@ export function RepositoryPage() {
                     type="text"
                     placeholder={isMetadataTab ? 'Search metadata foundations...' : 'Search foundations...'}
                     className="flex-1 bg-transparent text-[14px] text-[#1F1F1F] placeholder:text-[#9ca3af] outline-none border-none"
-                    style={{ fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: '14px' }}
+                    style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: '14px' }}
                     value={foundSearch}
                     onChange={(e) => setFoundSearch(e.target.value)}
                   />
@@ -649,7 +649,7 @@ function FoundationRowActions({ item, onView, onEdit, onWithdraw, onDelete }: {
                 <button
                   onClick={() => { onWithdraw(item); setMenuOpen(false); }}
                   className="w-full flex items-center gap-2 px-3 py-2 text-left text-[13px] text-[#6b7280] hover:bg-[#F2F2F2] transition-colors"
-                  style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}
+                  style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}
                 >
                   <Ban size={13} />
                   Withdraw
@@ -658,7 +658,7 @@ function FoundationRowActions({ item, onView, onEdit, onWithdraw, onDelete }: {
               <button
                 onClick={() => { onDelete(item); setMenuOpen(false); }}
                 className="w-full flex items-center gap-2 px-3 py-2 text-left text-[13px] text-[#C5143D] hover:bg-red-50 transition-colors"
-                style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}
+                style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}
               >
                 <Trash2 size={13} />
                 Delete
@@ -883,7 +883,7 @@ function CreateFoundationDialog({ onClose, onCreate, allowedTypes }: {
                   setStep(1);
                 }}
                 className={inputStyle}
-                style={{ borderRadius: '0px', fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: '14px' }}
+                style={{ borderRadius: '0px', fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: '14px' }}
               >
                 <option value="">Select a foundation type...</option>
                 {selectableOptions.map(opt => (
@@ -906,7 +906,7 @@ function CreateFoundationDialog({ onClose, onCreate, allowedTypes }: {
                   setUploadedFile(null);
                 }}
                 className={inputStyle}
-                style={{ borderRadius: '0px', fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: '14px' }}
+                style={{ borderRadius: '0px', fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: '14px' }}
               >
                 <option value="">Select a format...</option>
                 <option value="digital">Digital</option>
@@ -1148,7 +1148,7 @@ function RowActions({ item, onView, onEdit, onWithdraw, onDelete }: { item: Repo
                 <button
                   onClick={() => { onWithdraw(item); setMenuOpen(false); }}
                   className="w-full flex items-center gap-2 px-3 py-2 text-left text-[13px] text-[#6b7280] hover:bg-[#F2F2F2] transition-colors"
-                  style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}
+                  style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}
                 >
                   <Ban size={13} />
                   Withdraw
@@ -1157,7 +1157,7 @@ function RowActions({ item, onView, onEdit, onWithdraw, onDelete }: { item: Repo
               <button
                 onClick={() => { onDelete(item); setMenuOpen(false); }}
                 className="w-full flex items-center gap-2 px-3 py-2 text-left text-[13px] text-[#C5143D] hover:bg-red-50 transition-colors"
-                style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}
+                style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}
               >
                 <Trash2 size={13} />
                 Delete
@@ -1260,8 +1260,8 @@ function QuickPreviewPanel({ item, onClose, onViewCanvas, onEdit }: {
   const metaLcChip = metaLifecycleColors[item.status] ?? 'bg-gray-100 text-gray-600 border-gray-200';
   const MetaSysRow = ({ label, value }: { label: string; value: React.ReactNode }) => (
     <div className="flex items-start gap-2 py-1.5 border-b border-[#f3f4f6] last:border-0">
-      <span className="text-[11px] text-[#9ca3af] shrink-0" style={{ width: '100px', fontFamily: "'DM Sans', system-ui" }}>{label}</span>
-      <span className="text-[12px] text-[#1F1F1F] flex-1 break-all" style={{ fontFamily: "'DM Sans', system-ui" }}>{value}</span>
+      <span className="text-[11px] text-[#9ca3af] shrink-0" style={{ width: '100px', fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial" }}>{label}</span>
+      <span className="text-[12px] text-[#1F1F1F] flex-1 break-all" style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial" }}>{value}</span>
     </div>
   );
 
@@ -1481,13 +1481,13 @@ function QuickPreviewPanel({ item, onClose, onViewCanvas, onEdit }: {
                 const refItem = repositoryItems.find(r => r.id === ref);
                 return (
                   <div key={ref} className="flex items-start gap-2 py-1.5 border-b border-[#f3f4f6] last:border-0">
-                    <span className="text-[11px] text-[#9ca3af] shrink-0" style={{ width: '100px', fontFamily: "'DM Sans', system-ui" }}>{refItem?.type || ''}</span>
+                    <span className="text-[11px] text-[#9ca3af] shrink-0" style={{ width: '100px', fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial" }}>{refItem?.type || ''}</span>
                     <a
                       href={`/canvas/${ref}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-[12px] text-[#2563eb] flex-1 break-all hover:underline"
-                      style={{ fontFamily: "'DM Sans', system-ui", textDecoration: 'none' }}
+                      style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial", textDecoration: 'none' }}
                     >
                       {refItem?.name || ref}
                     </a>
@@ -1701,7 +1701,7 @@ function CreateComponentDialog({ onClose, onCreate }: {
                   setUploadedFile(null);
                 }}
                 className={inputStyle}
-                style={{ borderRadius: '0px', fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: '14px' }}
+                style={{ borderRadius: '0px', fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: '14px' }}
               >
                 <option value="">Select an object type...</option>
                 {OBJECT_TYPE_OPTIONS.map(opt => (
@@ -1724,7 +1724,7 @@ function CreateComponentDialog({ onClose, onCreate }: {
                   setUploadedFile(null);
                 }}
                 className={inputStyle}
-                style={{ borderRadius: '0px', fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: '14px' }}
+                style={{ borderRadius: '0px', fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: '14px' }}
               >
                 <option value="">Select a format...</option>
                 <option value="digital">Digital</option>
@@ -1788,7 +1788,7 @@ function CreateComponentDialog({ onClose, onCreate }: {
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="e.g. Deductible Clause (Marine Hull)"
                   className={inputStyle}
-                  style={{ borderRadius: '0px', fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: '14px' }}
+                  style={{ borderRadius: '0px', fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: '14px' }}
                   autoFocus
                 />
               </div>
@@ -1807,7 +1807,7 @@ function CreateComponentDialog({ onClose, onCreate }: {
                     setShowRiskCodeDropdown(o => !o);
                   }}
                   className={`${inputStyle} text-left flex items-center justify-between cursor-pointer`}
-                  style={{ borderRadius: '0px', fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: '14px' }}
+                  style={{ borderRadius: '0px', fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: '14px' }}
                 >
                   <span className={selectedRiskCodes.length > 0 ? 'text-[#1F1F1F]' : 'text-[#9ca3af]'}>
                     {selectedRiskCodes.length > 0
@@ -1858,7 +1858,7 @@ function CreateComponentDialog({ onClose, onCreate }: {
                   value={cob}
                   onChange={(e) => setCob(e.target.value)}
                   className={inputStyle}
-                  style={{ borderRadius: '0px', fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: '14px' }}
+                  style={{ borderRadius: '0px', fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: '14px' }}
                 >
                   <option value="">Select class of business...</option>
                   {cobOptions.map(c => (
@@ -1883,7 +1883,7 @@ function CreateComponentDialog({ onClose, onCreate }: {
                     setShowJurisdictionDropdown(o => !o);
                   }}
                   className={`${inputStyle} text-left flex items-center justify-between cursor-pointer`}
-                  style={{ borderRadius: '0px', fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: '14px' }}
+                  style={{ borderRadius: '0px', fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: '14px' }}
                 >
                   <span className={selectedJurisdictions.length > 0 ? 'text-[#1F1F1F]' : 'text-[#9ca3af]'}>
                     {selectedJurisdictions.length > 0
@@ -1933,7 +1933,7 @@ function CreateComponentDialog({ onClose, onCreate }: {
                   placeholder="Optional notes for publication…"
                   rows={3}
                   className={inputStyle}
-                  style={{ borderRadius: '0px', fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: '14px', resize: 'vertical' }}
+                  style={{ borderRadius: '0px', fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: '14px', resize: 'vertical' }}
                 />
               </div>
             </div>

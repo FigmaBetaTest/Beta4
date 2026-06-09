@@ -2,6 +2,7 @@
 
 :root {
   --font-size: 16px;
+  --font-family: 'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   --background: #FFFFFF;
   --foreground: #1F1F1F;
   --card: #FFFFFF;
@@ -135,7 +136,7 @@
 
   html {
     font-size: var(--font-size);
-    font-family: 'DM Sans', system-ui, sans-serif;
+    font-family: var(--font-family);
   }
 
   h1 {

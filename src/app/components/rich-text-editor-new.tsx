@@ -283,7 +283,7 @@ function StaticTableBlock({ tableData, onChange, onRemove }: {
                           updateCell(rowIdx, colIdx, e.target.value);
                         }}
                         style={{
-                          fontFamily: "'DM Sans', system-ui, sans-serif",
+                          fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif",
                           minHeight: '36px',
                           resize: 'none',
                           overflow: 'hidden',
@@ -491,7 +491,7 @@ function DynamicTableBlock({ rows, headerOrientation = 'vertical', onChange, onO
                           onChange={(val) => updateTitle(idx, val)}
                           placeholder="Label"
                           style={{
-                            fontFamily: "'DM Sans', system-ui, sans-serif",
+                            fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif",
                             fontWeight: 600,
                             minHeight: '36px',
                           }}
@@ -532,7 +532,7 @@ function DynamicTableBlock({ rows, headerOrientation = 'vertical', onChange, onO
                       onChange={(val) => updateTitle(idx, val)}
                       placeholder="Label"
                       style={{
-                        fontFamily: "'DM Sans', system-ui, sans-serif",
+                        fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif",
                         fontWeight: 600,
                         minHeight: '36px',
                       }}
@@ -1169,7 +1169,7 @@ export function RichTextEditor({
                       value={paragraph.content}
                       onChange={(val) => onUpdateParagraph(paragraph.id, val)}
                       placeholder="Section label..."
-                      style={{ fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: '13px', fontWeight: 600, color: '#C5143D', minHeight: '20px' }}
+                      style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: '13px', fontWeight: 600, color: '#C5143D', minHeight: '20px' }}
                     />
                   </div>
                 ) : paragraph.blockType === 'h1' ? (
@@ -1182,7 +1182,7 @@ export function RichTextEditor({
                       {paragraph.titlePrefix && (
                         <div
                           className="select-none"
-                          style={{ fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: '11px', fontWeight: 600, color: '#9ca3af', letterSpacing: '0.04em', marginBottom: '2px', userSelect: 'none' }}
+                          style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: '11px', fontWeight: 600, color: '#9ca3af', letterSpacing: '0.04em', marginBottom: '2px', userSelect: 'none' }}
                         >
                           {paragraph.titlePrefix}
                         </div>
@@ -1195,7 +1195,7 @@ export function RichTextEditor({
                           onUpdateParagraph(paragraph.id, full);
                         }}
                         placeholder="Heading..."
-                        style={{ fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: '18px', fontWeight: 700, color: '#1F1F1F', minHeight: '28px' }}
+                        style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: '18px', fontWeight: 700, color: '#1F1F1F', minHeight: '28px' }}
                       />
                     </div>
                   </div>
@@ -1210,7 +1210,7 @@ export function RichTextEditor({
                       value={paragraph.content}
                       onChange={(val) => onUpdateParagraph(paragraph.id, val)}
                       placeholder="Heading..."
-                      style={{ fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: '15px', fontWeight: 700, color: '#1F1F1F', minHeight: '24px' }}
+                      style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: '15px', fontWeight: 700, color: '#1F1F1F', minHeight: '24px' }}
                     />
                   </div>
                 ) : paragraph.blockType === 'sub-component-title' ? (
@@ -1222,7 +1222,7 @@ export function RichTextEditor({
                     <div className="flex-1">
                       <div
                         className="select-none"
-                        style={{ fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: '11px', fontWeight: 600, color: '#9ca3af', letterSpacing: '0.04em', marginBottom: '2px', userSelect: 'none' }}
+                        style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: '11px', fontWeight: 600, color: '#9ca3af', letterSpacing: '0.04em', marginBottom: '2px', userSelect: 'none' }}
                       >
                         SC
                       </div>
@@ -1245,7 +1245,7 @@ export function RichTextEditor({
                           lastKeyRef.current = e.key;
                         }}
                         placeholder="Write Sub-Component Title"
-                        style={{ fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: '15px', fontWeight: 700, color: '#1F1F1F', minHeight: '24px' }}
+                        style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: '15px', fontWeight: 700, color: '#1F1F1F', minHeight: '24px' }}
                       />
                     </div>
                   </div>
@@ -1267,7 +1267,7 @@ export function RichTextEditor({
                             value={paragraph.clauseNumber ?? ''}
                             onChange={(e) => onUpdateClauseNumber(paragraph.id, e.target.value)}
                             className="bg-transparent outline-none border-none text-[14px] text-[#374151] text-left w-full"
-                            style={{ fontFamily: "'DM Sans', system-ui, sans-serif", paddingTop: '2px' }}
+                            style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif", paddingTop: '2px' }}
                             placeholder="12.34"
                             onFocus={() => setFocusedParagraphId(paragraph.id)}
                             onKeyDown={(e) => {
@@ -1299,7 +1299,7 @@ export function RichTextEditor({
                             trackCursor(paragraph.id)(e as unknown as React.SyntheticEvent<HTMLTextAreaElement>);
                           }}
                           placeholder="Clause text..."
-                          style={{ fontFamily: "'DM Sans', system-ui, sans-serif", minHeight: '28px' }}
+                          style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif", minHeight: '28px' }}
                         />
                       </div>
                     </div>
@@ -1314,7 +1314,7 @@ export function RichTextEditor({
                           />
                         </div>
                         <div className="flex items-start flex-1" style={{ paddingLeft: `${(paragraph.indent ?? 0) * 68 + 8}px` }}>
-                          <span className="text-[14px] text-[#374151] shrink-0" style={{ fontFamily: "'DM Sans', system-ui, sans-serif", width: `${Math.max(56, (paragraph.clauseNumber ?? '').length * 7.5)}px`, minWidth: `${Math.max(56, (paragraph.clauseNumber ?? '').length * 7.5)}px`, paddingTop: '2px', display: 'inline-block' }}>{paragraph.clauseNumber ?? ''}</span>
+                          <span className="text-[14px] text-[#374151] shrink-0" style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif", width: `${Math.max(56, (paragraph.clauseNumber ?? '').length * 7.5)}px`, minWidth: `${Math.max(56, (paragraph.clauseNumber ?? '').length * 7.5)}px`, paddingTop: '2px', display: 'inline-block' }}>{paragraph.clauseNumber ?? ''}</span>
                           <span className="text-[10px] text-amber-700 font-mono shrink-0" style={{ paddingTop: '3px' }}>{variant.letter}</span>
                           <div className="shrink-0" style={{ width: '12px' }} />
                           <AutoResizeTextarea
@@ -1326,7 +1326,7 @@ export function RichTextEditor({
                             onMouseUp={trackCursor(paragraph.id, variant.letter)}
                             onKeyDown={(e) => { trackCursor(paragraph.id, variant.letter)(e as unknown as React.SyntheticEvent<HTMLTextAreaElement>); }}
                             placeholder="Variant text..."
-                            style={{ fontFamily: "'DM Sans', system-ui, sans-serif", minHeight: '28px' }}
+                            style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif", minHeight: '28px' }}
                           />
                         </div>
                       </div>
@@ -1373,7 +1373,7 @@ export function RichTextEditor({
                           trackCursor(paragraph.id)(e as unknown as React.SyntheticEvent<HTMLTextAreaElement>);
                         }}
                         placeholder="List item..."
-                        style={{ fontFamily: "'DM Sans', system-ui, sans-serif", minHeight: '28px' }}
+                        style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif", minHeight: '28px' }}
                       />
                     </div>
                     {paragraph.variants?.map((variant) => (
@@ -1399,7 +1399,7 @@ export function RichTextEditor({
                           onMouseUp={trackCursor(paragraph.id, variant.letter)}
                           onKeyDown={(e) => { trackCursor(paragraph.id, variant.letter)(e as unknown as React.SyntheticEvent<HTMLTextAreaElement>); }}
                           placeholder="Variant text..."
-                          style={{ fontFamily: "'DM Sans', system-ui, sans-serif", minHeight: '28px' }}
+                          style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif", minHeight: '28px' }}
                         />
                       </div>
                     ))}
@@ -1420,7 +1420,7 @@ export function RichTextEditor({
                         value={paragraph.content}
                         onChange={(val) => onUpdateParagraph(paragraph.id, val)}
                         placeholder="Enter definition text..."
-                        style={{ fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: '13px', color: '#374151', minHeight: '20px' }}
+                        style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: '13px', color: '#374151', minHeight: '20px' }}
                         onFocus={() => setFocusedParagraphId(paragraph.id)}
                         onSelect={(e) => { const t = e.currentTarget; trackCursor(paragraph.id)(t); }}
                         onMouseUp={(e) => { const t = e.currentTarget; trackCursor(paragraph.id)(t); }}
@@ -1446,7 +1446,7 @@ export function RichTextEditor({
                         value={paragraph.content}
                         onChange={(val) => onUpdateParagraph(paragraph.id, val)}
                         placeholder="Enter guidance text..."
-                        style={{ fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: '13px', color: '#374151', minHeight: '20px' }}
+                        style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: '13px', color: '#374151', minHeight: '20px' }}
                         onFocus={() => setFocusedParagraphId(paragraph.id)}
                         onSelect={(e) => { const t = e.currentTarget; trackCursor(paragraph.id)(t); }}
                         onMouseUp={(e) => { const t = e.currentTarget; trackCursor(paragraph.id)(t); }}
@@ -1531,7 +1531,7 @@ export function RichTextEditor({
                           trackCursor(paragraph.id)(e as unknown as React.SyntheticEvent<HTMLTextAreaElement>);
                         }}
                         placeholder="Enter paragraph text..."
-                        style={{ fontFamily: "'DM Sans', system-ui, sans-serif", minHeight: '28px', textAlign: paragraph.textAlign ?? 'left' }}
+                        style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif", minHeight: '28px', textAlign: paragraph.textAlign ?? 'left' }}
                       />
                     </div>
                     {/* Variant B, C, D, etc. */}
@@ -1559,7 +1559,7 @@ export function RichTextEditor({
                           onMouseUp={trackCursor(paragraph.id, variant.letter)}
                           onKeyDown={(e) => { trackCursor(paragraph.id, variant.letter)(e as unknown as React.SyntheticEvent<HTMLTextAreaElement>); }}
                           placeholder="Enter variant text..."
-                          style={{ fontFamily: "'DM Sans', system-ui, sans-serif", minHeight: '28px' }}
+                          style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif", minHeight: '28px' }}
                         />
                       </div>
                     ))}
@@ -1592,14 +1592,14 @@ export function RichTextEditor({
                   <button
                     onClick={() => { handleAddParagraph(); setAddElementDropdownOpen(false); }}
                     className="w-full text-left px-3 py-2 text-[12px] text-[#1F1F1F] hover:bg-[#F2F2F2] transition-colors cursor-pointer whitespace-nowrap"
-                    style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}
+                    style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}
                   >
                     Add Paragraph
                   </button>
                   <button
                     onClick={() => { handleAddSubComponent(); setAddElementDropdownOpen(false); }}
                     className="w-full text-left px-3 py-2 text-[12px] text-[#1F1F1F] hover:bg-[#F2F2F2] transition-colors cursor-pointer whitespace-nowrap"
-                    style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}
+                    style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}
                   >
                     Add Sub-Component
                   </button>
@@ -1649,28 +1649,28 @@ export function RichTextEditor({
                 return (
                 <div key={`preview-${paragraph.id}`} className="space-y-2" style={tightSpacing ? { marginTop: '4px' } : {}}>
                   {paragraph.blockType === 'label' ? (
-                    <p style={{ fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: '13px', fontWeight: 600, color: '#C5143D', margin: 0 }}>
+                    <p style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: '13px', fontWeight: 600, color: '#C5143D', margin: 0 }}>
                       {paragraph.content}
                     </p>
                   ) : paragraph.blockType === 'h1' ? (
                     <div>
                       {paragraph.titlePrefix && (
-                        <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: '11px', fontWeight: 600, color: '#9ca3af', letterSpacing: '0.04em', marginBottom: '2px' }}>
+                        <div style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: '11px', fontWeight: 600, color: '#9ca3af', letterSpacing: '0.04em', marginBottom: '2px' }}>
                           {paragraph.titlePrefix}
                         </div>
                       )}
-                      <h1 style={{ fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: '18px', fontWeight: 700, color: '#1F1F1F', margin: 0 }}>
+                      <h1 style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: '18px', fontWeight: 700, color: '#1F1F1F', margin: 0 }}>
                         {paragraph.titlePrefix ? paragraph.content.replace(new RegExp(`^${paragraph.titlePrefix}\\s*`), '') : paragraph.content}
                       </h1>
                     </div>
                   ) : paragraph.blockType === 'h2' ? (
-                    <h2 style={{ fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: '15px', fontWeight: 700, color: '#1F1F1F', margin: 0 }}>
+                    <h2 style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: '15px', fontWeight: 700, color: '#1F1F1F', margin: 0 }}>
                       {paragraph.content}
                     </h2>
                   ) : paragraph.blockType === 'sub-component-title' ? (
                     <div className="mt-4">
-                      <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: '11px', fontWeight: 600, color: '#9ca3af', letterSpacing: '0.04em', marginBottom: '2px' }}>SC</div>
-                      <h2 style={{ fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: '15px', fontWeight: 700, color: '#1F1F1F', margin: 0 }}>
+                      <div style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: '11px', fontWeight: 600, color: '#9ca3af', letterSpacing: '0.04em', marginBottom: '2px' }}>SC</div>
+                      <h2 style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: '15px', fontWeight: 700, color: '#1F1F1F', margin: 0 }}>
                         {paragraph.content.replace(/^SC\s*/, '') || <span style={{ color: '#d1d5db', fontWeight: 400 }}>Write Sub-Component Title</span>}
                       </h2>
                     </div>
@@ -1683,7 +1683,7 @@ export function RichTextEditor({
                       >
                         <span
                           className="shrink-0 text-[13px] text-[#374151]"
-                          style={{ fontFamily: "'DM Sans', system-ui, sans-serif", width: `${Math.max(56, (paragraph.clauseNumber ?? '').length * 7.5)}px`, minWidth: `${Math.max(56, (paragraph.clauseNumber ?? '').length * 7.5)}px` }}
+                          style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif", width: `${Math.max(56, (paragraph.clauseNumber ?? '').length * 7.5)}px`, minWidth: `${Math.max(56, (paragraph.clauseNumber ?? '').length * 7.5)}px` }}
                         >
                           {paragraph.clauseNumber || <span className="text-[#d1d5db]">—</span>}
                         </span>

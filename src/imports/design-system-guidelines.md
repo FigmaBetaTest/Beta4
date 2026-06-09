@@ -53,9 +53,9 @@ Generated on 10.3.2026
 
 **Font URLs:**
 
-- https://fonts.google.com/specimen/DM+Sans
+- https://fonts.adobe.com/fonts/neue-helvetica
 
-**Font Family:** `DMSans,system-ui,sans-serif`
+**Font Family:** `Neue Helvetica, Helvetica Neue, Helvetica, Arial, sans-serif`
 
 ### Font Size Scale
 
@@ -83,7 +83,7 @@ Generated on 10.3.2026
 
 ```css
 :root {
-  --font-family: DMSans,system-ui,sans-serif;
+  --font-family: 'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   --font-2xs: 0.625rem;
   --font-xs: 0.750rem;
   --font-sm: 0.875rem;
@@ -154,7 +154,7 @@ Generated on 10.3.2026
   border-radius: 0px;
   padding: 8px 40px;
   font-size: 14px;
-  font-family: DMSans,system-ui,sans-serif;
+  font-family: 'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -172,7 +172,7 @@ Generated on 10.3.2026
   border-radius: 0px;
   padding: 8px 40px;
   font-size: 14px;
-  font-family: DMSans,system-ui,sans-serif;
+  font-family: 'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -204,7 +204,7 @@ a {
   color: #2563eb;
   text-decoration: underline;
   font-size: 14px;
-  font-family: DMSans,system-ui,sans-serif;
+  font-family: 'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   transition: all 0.2s ease;
 }
 
@@ -243,7 +243,7 @@ textarea {
   border-radius: 0px;
   padding: 8px 12px;
   font-size: 14px;
-  font-family: DMSans,system-ui,sans-serif;
+  font-family: 'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   transition: border-color 0.2s ease;
 }
 
@@ -280,7 +280,7 @@ select {
   border-radius: 0px;
   padding: 8px 12px;
   font-size: 14px;
-  font-family: DMSans,system-ui,sans-serif;
+  font-family: 'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   cursor: pointer;
   transition: border-color 0.2s ease;
 }

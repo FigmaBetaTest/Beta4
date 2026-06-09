@@ -1489,8 +1489,8 @@ function ConditionsPanel({ sections, selectedBlockId, onSelectBlock, conditionRu
   const metaLcChip = metaLifecycleColors[contract.status] ?? 'bg-gray-100 text-gray-600 border-gray-200';
   const MetaSysRow = ({ label, value }: { label: string; value: React.ReactNode }) => (
     <div className="flex items-start gap-2 py-1.5 border-b border-[#f3f4f6] last:border-0">
-      <span className="text-[11px] text-[#9ca3af] shrink-0" style={{ width: '100px', fontFamily: "'DM Sans', system-ui" }}>{label}</span>
-      <span className="text-[12px] text-[#1F1F1F] flex-1 break-all" style={{ fontFamily: "'DM Sans', system-ui" }}>{value}</span>
+      <span className="text-[11px] text-[#9ca3af] shrink-0" style={{ width: '100px', fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial" }}>{label}</span>
+      <span className="text-[12px] text-[#1F1F1F] flex-1 break-all" style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial" }}>{value}</span>
     </div>
   );
 
@@ -1696,13 +1696,13 @@ function ConditionsPanel({ sections, selectedBlockId, onSelectBlock, conditionRu
               <div className="space-y-0">
                 {usedInItems.map((refItem) => (
                   <div key={refItem!.id} className="flex items-start gap-2 py-1.5 border-b border-[#f3f4f6] last:border-0">
-                    <span className="text-[11px] text-[#9ca3af] shrink-0" style={{ width: '100px', fontFamily: "'DM Sans', system-ui" }}>{refItem!.type}</span>
+                    <span className="text-[11px] text-[#9ca3af] shrink-0" style={{ width: '100px', fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial" }}>{refItem!.type}</span>
                     <a
                       href={`/canvas/${refItem!.id}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-[12px] text-[#2563eb] flex-1 break-all hover:underline"
-                      style={{ fontFamily: "'DM Sans', system-ui", textDecoration: 'none' }}
+                      style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial", textDecoration: 'none' }}
                     >
                       {refItem!.name}
                     </a>
