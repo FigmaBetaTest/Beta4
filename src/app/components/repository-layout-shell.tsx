@@ -245,9 +245,6 @@ export function RepositoryLayoutShell() {
                             <span className="flex items-center justify-center w-5 h-5 bg-red-50 text-[#C5143D]"><X size={12} /></span>
                           )}
                           <span className="text-[13px] text-[#1F1F1F]">{n.itemName}</span>
-                          <span className={`text-[11px] ${n.type === 'approve' ? 'text-emerald-700' : 'text-[#C5143D]'}`}>
-                            {n.type === 'approve' ? 'Approved' : 'Rejected'}
-                          </span>
                           <span className="ml-auto text-[10px] text-[#9ca3af]">{n.time}</span>
                         </div>
                       </Link>
@@ -285,7 +282,7 @@ export function RepositoryLayoutShell() {
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden bg-background">
         {/* Top Bar — hidden on Approvals */}
-        {!isApprovals && (
+        {!isApprovals && false && (
           <header className="h-[42px] min-h-[42px] border-b border-border flex items-center justify-between px-4 bg-white">
             <div className="flex items-center gap-1">
               {breadcrumbs.map((crumb, index) => (

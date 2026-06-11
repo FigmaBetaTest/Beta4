@@ -137,20 +137,6 @@ function getSectionsForItem(item: typeof repositoryItems[0]): ContractSection[] 
   }
 }
 
-function getCanvasSubtitle(item: typeof repositoryItems[0], isEditMode: boolean): string {
-  const modeLabel = isEditMode ? 'Editing' : 'Read-only view';
-  switch (item.type) {
-    case 'Contract':
-      return `Contract Canvas — ${modeLabel} \u2022 Version ${item.version}`;
-    case 'Component-Group':
-      return `Component Group Canvas — ${modeLabel} \u2022 Version ${item.version}`;
-    case 'Component':
-      return `Component Canvas — ${modeLabel} \u2022 Version ${item.version}`;
-    default:
-      return `Canvas — ${modeLabel} \u2022 Version ${item.version}`;
-  }
-}
-
 /* ------------------------------------------------------------------ */
 /*  Main Canvas                                                       */
 /* ------------------------------------------------------------------ */
@@ -442,14 +428,14 @@ export function ContractCanvas() {
     <DndProvider backend={HTML5Backend}>
     <div className="flex flex-col h-full overflow-hidden">
       {/* Canvas Header */}
-      <div className="px-6 py-3 border-b border-[#d1d5db] bg-white flex items-center justify-between">
+      <div className="h-[54px] min-h-[54px] px-6 border-b border-[#d1d5db] bg-white flex items-center justify-between">
         <div className="flex items-center gap-3">
           <button onClick={() => navigate('/')} className="p-1.5 hover:bg-[#F2F2F2]">
             <ArrowLeft size={16} className="text-[#6b7280]" />
           </button>
-          <div>
+          <div className="flex items-center gap-2">
             <h2 className="text-[15px] text-[#1F1F1F]" style={{ fontFamily: 'var(--font-family)' }}>{contract.name}</h2>
-            <p className="text-[12px] text-[#6b7280]" style={{ fontFamily: 'var(--font-family)' }}>{getCanvasSubtitle(contract, isEditMode)}</p>
+            <StatusBadge status={contract.status} version={contract.version} />
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -1469,7 +1455,6 @@ function ConditionsPanel({ sections, selectedBlockId, onSelectBlock, conditionRu
   // Metadata derived values
   const metaTypeToClass: Record<string, string> = {
     'Contract': 'CTR', 'Component-Group': 'CG', 'Component': 'CMP',
-    'Clause': 'CLS', 'Analogue Document': 'ANA',
   };
   const metaObjectClass = metaTypeToClass[contract.type] ?? contract.type;
   const metaIsDigital = contract.format !== 'analogue';

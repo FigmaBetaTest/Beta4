@@ -5,8 +5,6 @@ const typeColors: Record<ItemType, string> = {
   'Contract': 'bg-blue-50 text-blue-700 border-blue-200',
   'Component-Group': 'bg-amber-50 text-amber-700 border-amber-200',
   'Component': 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  'Clause': 'bg-cyan-50 text-cyan-700 border-cyan-200',
-  'Analogue Document': 'bg-slate-100 text-slate-700 border-slate-300',
 };
 
 const statusColors: Record<ItemStatus, string> = {
@@ -33,11 +31,12 @@ export function TypeBadge({ type }: { type: ItemType }) {
   );
 }
 
-export function StatusBadge({ status }: { status: ItemStatus }) {
+export function StatusBadge({ status, version }: { status: ItemStatus; version?: string }) {
   return (
     <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 text-[11px] ${statusColors[status]}`}>
       <span className={`w-1.5 h-1.5 rounded-full ${statusDotColors[status]}`} />
       {statusLabels[status]}
+      {version && <span className="text-[#6b7280]">• v{version}</span>}
     </span>
   );
 }

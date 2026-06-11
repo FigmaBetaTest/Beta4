@@ -523,7 +523,7 @@ export function ComponentEditor() {
           </button>
           <div className="flex items-center gap-2">
             <span className="text-[14px] text-[#1F1F1F]">{displayName}</span>
-            <StatusBadge status={component.status} />
+            <StatusBadge status={component.status} version={component.version} />
             {isDirty && <span className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5">Unsaved</span>}
           </div>
         </div>
@@ -1641,8 +1641,6 @@ function EditorMetadataPanel({ component }: { component: typeof repositoryItems[
     'Contract': 'CTR',
     'Component-Group': 'CG',
     'Component': 'CMP',
-    'Clause': 'CLS',
-    'Analogue Document': 'ANA',
   };
   const objectClass = typeToClass[component.type] ?? component.type;
 

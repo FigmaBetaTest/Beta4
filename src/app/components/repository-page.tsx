@@ -1,7 +1,7 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { useNavigate, useSearchParams, useLocation } from 'react-router';
 import { toast } from 'sonner';
-import { Search, Filter, Plus, Eye, Edit3, MoreHorizontal, ChevronDown, X, ChevronLeft, ChevronRight, ExternalLink, Download, ArrowUp, ArrowDown, FileText, Table2, ArrowRight, Check, Upload, Trash2, Ban, BookOpen } from 'lucide-react';
+import { Search, Filter, Plus, Eye, Edit3, MoreVertical, ChevronDown, X, ChevronLeft, ChevronRight, ArrowUp, ArrowDown, FileText, Table2, ArrowRight, Check, Upload, Trash2, Ban, BookOpen } from 'lucide-react';
 import { repositoryItems, dynamicRepositoryItems, foundationItems, dynamicFoundationItems, foundationTypeLabels, contractSections, componentGroupSections, componentSections, statusLabels, type RepositoryItem, type ItemType, type ItemStatus, type ContractSection, type FoundationItem, type FoundationType } from './mock-data';
 import { TypeBadge, StatusBadge } from './type-badge';
 import { MetaKV } from './meta-kv';
@@ -22,12 +22,15 @@ export function RepositoryPage() {
   const [showFacets, setShowFacets] = useState(false);
   const [typeFilter, setTypeFilter] = useState<ItemType | ''>('');
   const [statusFilter, setStatusFilter] = useState<ItemStatus | ''>('');
-  const [jurisdictionFilter, setJurisdictionFilter] = useState('');
   const [cobFilter, setCobFilter] = useState('');
   const [sortKey, setSortKey] = useState<SortKey | null>(null);
   const [sortDir, setSortDir] = useState<SortDir>('asc');
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [localItems, setLocalItems] = useState<RepositoryItem[]>(() => [...repositoryItems, ...dynamicRepositoryItems]);
+  const [objPage, setObjPage] = useState(1);
+  const [foundPage, setFoundPage] = useState(1);
+  const [dynamicPageSize, setDynamicPageSize] = useState(15);
+  const tableAreaRef = useRef<HTMLDivElement>(null);
 
   // Foundations tab state
   const [foundSearch, setFoundSearch] = useState('');
@@ -46,6 +49,23 @@ export function RepositoryPage() {
   useEffect(() => {
     setLocalFoundItems([...foundationItems, ...dynamicFoundationItems]);
   }, [location.key]);
+  useEffect(() => { setObjPage(1); }, [searchQuery, typeFilter, statusFilter, cobFilter, dynamicPageSize]);
+  useEffect(() => { setFoundPage(1); }, [foundSearch, foundTypeFilter, foundStatusFilter, foundSegmentFilter, foundOwnerFilter, activeTab, dynamicPageSize]);
+  useEffect(() => {
+    const el = tableAreaRef.current;
+    if (!el) return;
+    const THEAD = 38;
+    const PAGINATION = 44;
+    const ROW = 45;
+    const calc = () => {
+      const h = el.clientHeight;
+      setDynamicPageSize(Math.max(1, Math.floor((h - THEAD - PAGINATION) / ROW)));
+    };
+    calc();
+    const ro = new ResizeObserver(calc);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   const filteredItems = useMemo(() => {
     let items = localItems;
@@ -55,7 +75,6 @@ export function RepositoryPage() {
     }
     if (typeFilter) items = items.filter(i => i.type === typeFilter);
     if (statusFilter) items = items.filter(i => i.status === statusFilter);
-    if (jurisdictionFilter) items = items.filter(i => i.jurisdiction === jurisdictionFilter);
     if (cobFilter) items = items.filter(i => i.classOfBusiness === cobFilter);
 
     if (sortKey) {
@@ -68,7 +87,7 @@ export function RepositoryPage() {
     }
 
     return items;
-  }, [searchQuery, typeFilter, statusFilter, jurisdictionFilter, cobFilter, sortKey, sortDir, localItems]);
+  }, [searchQuery, typeFilter, statusFilter, cobFilter, sortKey, sortDir, localItems]);
 
   const handleSort = (key: SortKey) => {
     if (sortKey === key) {
@@ -180,12 +199,26 @@ export function RepositoryPage() {
     ? localFoundItems.filter(i => i.type === 'DM')
     : localFoundItems.filter(i => i.type !== 'DM');
 
+  useEffect(() => {
+    // Prevent hidden filter controls from affecting results.
+    if (isMetadataTab) {
+      setFoundTypeFilter('');
+    } else {
+      setFoundSegmentFilter('');
+    }
+  }, [isMetadataTab]);
+
+  const objTotalPages = Math.max(1, Math.ceil(filteredItems.length / dynamicPageSize));
+  const pagedItems = filteredItems.slice((objPage - 1) * dynamicPageSize, objPage * dynamicPageSize);
+  const foundTotalPages = Math.max(1, Math.ceil(activeFoundationRows.length / dynamicPageSize));
+  const pagedFoundRows = activeFoundationRows.slice((foundPage - 1) * dynamicPageSize, foundPage * dynamicPageSize);
+
   return (
-    <div className="flex h-full overflow-hidden">
+    <div className="relative flex h-full overflow-hidden">
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Page Header */}
-        <div className="p-6 pb-0 flex-1 flex flex-col overflow-hidden">
+        <div className="p-6 pb-0 flex-1 min-h-0 flex flex-col">
           <div className="flex items-center justify-between mb-1">
             <h1 className="text-[22px] text-[#1F1F1F] leading-[90%]">Wording Objects Library v0.5</h1>
           </div>
@@ -266,11 +299,9 @@ export function RepositoryPage() {
                 <FacetPanel
                   typeFilter={typeFilter}
                   statusFilter={statusFilter}
-                  jurisdictionFilter={jurisdictionFilter}
                   cobFilter={cobFilter}
                   onTypeChange={setTypeFilter}
                   onStatusChange={setStatusFilter}
-                  onJurisdictionChange={setJurisdictionFilter}
                   onCobChange={setCobFilter}
                   onClose={() => setShowFacets(false)}
                 />
@@ -330,6 +361,8 @@ export function RepositoryPage() {
                   ownerFilter={foundOwnerFilter}
                   items={activeFoundationItems}
                   availableTypes={isMetadataTab ? ['DM'] : ['DEF', 'GV', 'LOV', 'TEC', 'SYS']}
+                  showTypeFilter={!isMetadataTab}
+                  showSegmentFilter={isMetadataTab}
                   onTypeChange={setFoundTypeFilter}
                   onStatusChange={setFoundStatusFilter}
                   onSegmentChange={setFoundSegmentFilter}
@@ -341,12 +374,12 @@ export function RepositoryPage() {
           )}
 
           {/* Results Area */}
-          <div className="flex-1 overflow-hidden flex flex-col pt-2">
+          <div ref={tableAreaRef} className="flex-1 min-h-0 flex flex-col pt-2">
 
             {/* Objects Table */}
             {activeTab === 'objects' && (
-              <>
-                <div className="flex-1 overflow-auto border border-[#d1d5db] bg-white">
+              <div className="flex-1 min-h-0 flex flex-col">
+                <div className="flex-1 min-h-0 overflow-hidden border border-[#d1d5db] bg-white">
                   <table className="w-full table-fixed">
                 <colgroup>
                   <col style={{ width: '28%' }} />
@@ -358,7 +391,7 @@ export function RepositoryPage() {
                   <col style={{ width: '8%' }} />
                   <col style={{ width: '8%' }} />
                 </colgroup>
-                <thead className="sticky top-0 bg-[#F2F2F2] z-10">
+                <thead className="bg-[#F2F2F2]">
                   <tr className="border-b border-[#d1d5db]">
                     {([
                       { key: 'name' as SortKey, label: 'Name' },
@@ -389,7 +422,7 @@ export function RepositoryPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredItems.map((item) => (
+                  {pagedItems.map((item) => (
                     <tr
                       key={item.id}
                       onClick={() => handleRowClick(item)}
@@ -397,22 +430,7 @@ export function RepositoryPage() {
                         selectedRow?.id === item.id ? 'bg-[#C5143D]/5' : 'hover:bg-[#F2F2F2]/50'
                       }`}
                     >
-                      <td className="px-4 py-3 text-[13px] text-[#1F1F1F] max-w-0 truncate">
-                        {item.type === 'Analogue Document' && item.externalUrl ? (
-                          <a
-                            href={item.externalUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 text-[#2563eb] no-underline hover:underline truncate max-w-full"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <span className="truncate">{item.name}</span>
-                            <ExternalLink size={11} className="text-[#9ca3af] shrink-0" />
-                          </a>
-                        ) : (
-                          item.name
-                        )}
-                      </td>
+                      <td className="px-4 py-3 text-[13px] text-[#1F1F1F] max-w-0 truncate">{item.name}</td>
                       <td className="px-4 py-3 max-w-0 overflow-hidden"><div className="truncate"><TypeBadge type={item.type} /></div></td>
                       <td className="px-4 py-3 text-[13px] text-[#6b7280] max-w-0 truncate">{item.version}</td>
                       <td className="px-4 py-3 max-w-0 overflow-hidden"><div className="truncate"><StatusBadge status={item.status} /></div></td>
@@ -435,20 +453,13 @@ export function RepositoryPage() {
             </div>
 
             {/* Objects Pagination */}
-            <div className="flex items-center justify-between py-3">
-              <span className="text-[12px] text-[#6b7280]">Showing 1–{filteredItems.length} of {filteredItems.length}</span>
-              <div className="flex items-center gap-1">
-                <button className="p-1.5 hover:bg-[#F2F2F2]"><ChevronLeft size={14} className="text-[#6b7280]" /></button>
-                <button className="px-2.5 py-1 bg-[#C5143D] text-white text-[12px]">1</button>
-                <button className="p-1.5 hover:bg-[#F2F2F2]"><ChevronRight size={14} className="text-[#6b7280]" /></button>
-              </div>
-            </div>
-          </>
+            <TablePagination page={objPage} totalPages={objTotalPages} total={filteredItems.length} pageSize={dynamicPageSize} onPage={setObjPage} />
+          </div>
           )}
 
             {/* Foundations Table */}
             {isFoundationTab && (
-              <>
+              <div className="flex-1 min-h-0 flex flex-col">
                 {activeFoundationRows.length === 0 ? (
                   <div className="flex-1 flex flex-col items-center justify-center text-center p-12 border border-dashed border-[#d1d5db] bg-white">
                     <BookOpen size={32} className="text-[#d1d5db] mb-3" />
@@ -469,7 +480,7 @@ export function RepositoryPage() {
                     </button>
                   </div>
                 ) : (
-                  <div className="flex-1 overflow-auto border border-[#d1d5db] bg-white">
+                  <div className="flex-1 min-h-0 overflow-hidden border border-[#d1d5db] bg-white">
                     <table className="w-full table-fixed">
                       <colgroup>
                         <col style={{ width: '30%' }} />
@@ -480,10 +491,10 @@ export function RepositoryPage() {
                         <col style={{ width: '12%' }} />
                         <col style={{ width: '9%' }} />
                       </colgroup>
-                      <thead className="sticky top-0 bg-[#F2F2F2] z-10">
+                      <thead className="bg-[#F2F2F2]">
                         <tr className="border-b border-[#d1d5db]">
                           {([
-                            { key: 'name' as keyof FoundationItem, label: 'Name / Term' },
+                            { key: 'name' as keyof FoundationItem, label: 'Name' },
                             { key: 'type' as keyof FoundationItem, label: 'Type' },
                             { key: 'version' as keyof FoundationItem, label: 'Version' },
                             { key: 'status' as keyof FoundationItem, label: 'Status' },
@@ -510,7 +521,7 @@ export function RepositoryPage() {
                         </tr>
                       </thead>
                       <tbody>
-                        {activeFoundationRows.map((item) => (
+                        {pagedFoundRows.map((item) => (
                           <tr
                             key={item.id}
                             onClick={() => setSelectedFoundRow(selectedFoundRow?.id === item.id ? null : item)}
@@ -544,16 +555,9 @@ export function RepositoryPage() {
 
                 {/* Foundations Pagination */}
                 {activeFoundationRows.length > 0 && (
-                  <div className="flex items-center justify-between py-3">
-                    <span className="text-[12px] text-[#6b7280]">Showing 1–{activeFoundationRows.length} of {activeFoundationRows.length}</span>
-                    <div className="flex items-center gap-1">
-                      <button className="p-1.5 hover:bg-[#F2F2F2]"><ChevronLeft size={14} className="text-[#6b7280]" /></button>
-                      <button className="px-2.5 py-1 bg-[#C5143D] text-white text-[12px]">1</button>
-                      <button className="p-1.5 hover:bg-[#F2F2F2]"><ChevronRight size={14} className="text-[#6b7280]" /></button>
-                    </div>
-                  </div>
+                  <TablePagination page={foundPage} totalPages={foundTotalPages} total={activeFoundationRows.length} pageSize={dynamicPageSize} onPage={setFoundPage} />
                 )}
-              </>
+              </div>
             )}
           </div>
         </div>
@@ -561,22 +565,26 @@ export function RepositoryPage() {
 
       {/* Objects Quick Preview Panel */}
       {activeTab === 'objects' && selectedRow && (
-        <QuickPreviewPanel
-          item={selectedRow}
-          onClose={() => setSelectedRow(null)}
-          onViewCanvas={handleViewCanvas}
-          onEdit={handleEditComponent}
-        />
+        <div className="absolute inset-y-0 right-0 z-30 w-[340px] shadow-xl">
+          <QuickPreviewPanel
+            item={selectedRow}
+            onClose={() => setSelectedRow(null)}
+            onViewCanvas={handleViewCanvas}
+            onEdit={handleEditComponent}
+          />
+        </div>
       )}
 
       {/* Foundations Quick Preview Panel */}
       {isFoundationTab && selectedFoundRow && (
-        <FoundationQuickPreviewPanel
-          item={selectedFoundRow}
-          onClose={() => setSelectedFoundRow(null)}
-          onView={handleViewFoundation}
-          onEdit={handleEditFoundation}
-        />
+        <div className="absolute inset-y-0 right-0 z-30 w-[340px] shadow-xl">
+          <FoundationQuickPreviewPanel
+            item={selectedFoundRow}
+            onClose={() => setSelectedFoundRow(null)}
+            onView={handleViewFoundation}
+            onEdit={handleEditFoundation}
+          />
+        </div>
       )}
 
       {/* Create Component Dialog */}
@@ -603,6 +611,39 @@ export function RepositoryPage() {
           }}
         />
       )}
+    </div>
+  );
+}
+
+function TablePagination({ page, totalPages, total, pageSize, onPage }: {
+  page: number; totalPages: number; total: number; pageSize: number; onPage: (p: number) => void;
+}) {
+  const start = total === 0 ? 0 : (page - 1) * pageSize + 1;
+  const end = Math.min(page * pageSize, total);
+  const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
+  const visible = pages.filter(p => p === 1 || p === totalPages || Math.abs(p - page) <= 1);
+  return (
+    <div className="flex items-center justify-between py-3">
+      <span className="text-[12px] text-[#6b7280]">Showing {start}–{end} of {total}</span>
+      <div className="flex items-center gap-1">
+        <button disabled={page <= 1} onClick={() => onPage(page - 1)} className="p-1.5 hover:bg-[#F2F2F2] disabled:opacity-30 disabled:cursor-not-allowed">
+          <ChevronLeft size={14} className="text-[#6b7280]" />
+        </button>
+        {visible.map((p, i) => (
+          <span key={p} className="flex items-center gap-1">
+            {i > 0 && visible[i - 1] !== p - 1 && <span className="px-1 text-[12px] text-[#9ca3af]">…</span>}
+            <button
+              onClick={() => onPage(p)}
+              className={`px-2.5 py-1 text-[12px] transition-colors ${p === page ? 'bg-[#C5143D] text-white' : 'hover:bg-[#F2F2F2] text-[#1F1F1F]'}`}
+            >
+              {p}
+            </button>
+          </span>
+        ))}
+        <button disabled={page >= totalPages} onClick={() => onPage(page + 1)} className="p-1.5 hover:bg-[#F2F2F2] disabled:opacity-30 disabled:cursor-not-allowed">
+          <ChevronRight size={14} className="text-[#6b7280]" />
+        </button>
+      </div>
     </div>
   );
 }
@@ -639,7 +680,7 @@ function FoundationRowActions({ item, onView, onEdit, onWithdraw, onDelete }: {
           aria-haspopup="true"
           aria-expanded={menuOpen}
         >
-          <MoreHorizontal size={14} className="text-[#6b7280]" />
+          <MoreVertical size={14} className="text-[#6b7280]" />
         </button>
         {menuOpen && (
           <>
@@ -674,6 +715,8 @@ function FoundationRowActions({ item, onView, onEdit, onWithdraw, onDelete }: {
 function FoundationFacetPanel({
   typeFilter, statusFilter, segmentFilter, ownerFilter, items,
   availableTypes,
+  showTypeFilter,
+  showSegmentFilter,
   onTypeChange, onStatusChange, onSegmentChange, onOwnerChange, onClose,
 }: {
   typeFilter: FoundationType | '';
@@ -682,6 +725,8 @@ function FoundationFacetPanel({
   ownerFilter: string;
   items: FoundationItem[];
   availableTypes?: FoundationType[];
+  showTypeFilter?: boolean;
+  showSegmentFilter?: boolean;
   onTypeChange: (v: FoundationType | '') => void;
   onStatusChange: (v: ItemStatus | '') => void;
   onSegmentChange: (v: string) => void;
@@ -692,18 +737,22 @@ function FoundationFacetPanel({
   const statuses: ItemStatus[] = ['DRAFT', 'PENDING_APPROVAL', 'PUBLISHED', 'ARCHIVED', 'WITHDRAWN'];
   const segments = Array.from(new Set(items.map(i => i.segment).filter(Boolean))) as string[];
   const owners = Array.from(new Set(items.map(i => i.owner)));
+  const shouldShowTypeFilter = showTypeFilter ?? true;
+  const shouldShowSegmentFilter = showSegmentFilter ?? true;
 
   return (
     <div className="mt-2 p-4 bg-white border border-[#d1d5db] flex items-start gap-8 flex-wrap">
-      <div>
-        <p className="text-[11px] uppercase tracking-wider text-[#6b7280] mb-2">Foundation Type</p>
-        <div className="flex flex-wrap gap-1.5">
-          <button onClick={() => onTypeChange('')} className={`px-2.5 py-1 text-[12px] transition-colors ${!typeFilter ? 'bg-[#C5143D] text-white' : 'bg-[#F2F2F2] text-[#1F1F1F] hover:bg-white'}`}>All</button>
-          {types.map(t => (
-            <button key={t} onClick={() => onTypeChange(t)} className={`px-2.5 py-1 text-[12px] font-mono transition-colors ${typeFilter === t ? 'bg-[#C5143D] text-white' : 'bg-[#F2F2F2] text-[#1F1F1F] hover:bg-white'}`}>{t}</button>
-          ))}
+      {shouldShowTypeFilter && (
+        <div>
+          <p className="text-[11px] uppercase tracking-wider text-[#6b7280] mb-2">Foundation Type</p>
+          <div className="flex flex-wrap gap-1.5">
+            <button onClick={() => onTypeChange('')} className={`px-2.5 py-1 text-[12px] transition-colors ${!typeFilter ? 'bg-[#C5143D] text-white' : 'bg-[#F2F2F2] text-[#1F1F1F] hover:bg-white'}`}>All</button>
+            {types.map(t => (
+              <button key={t} onClick={() => onTypeChange(t)} className={`px-2.5 py-1 text-[12px] font-mono transition-colors ${typeFilter === t ? 'bg-[#C5143D] text-white' : 'bg-[#F2F2F2] text-[#1F1F1F] hover:bg-white'}`}>{t}</button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
       <div>
         <p className="text-[11px] uppercase tracking-wider text-[#6b7280] mb-2">Status</p>
         <div className="flex flex-wrap gap-1.5">
@@ -713,7 +762,7 @@ function FoundationFacetPanel({
           ))}
         </div>
       </div>
-      {segments.length > 0 && (
+      {shouldShowSegmentFilter && segments.length > 0 && (
         <div>
           <p className="text-[11px] uppercase tracking-wider text-[#6b7280] mb-2">Segment</p>
           <div className="flex flex-wrap gap-1.5">
@@ -759,7 +808,7 @@ function FoundationQuickPreviewPanel({ item, onClose, onView, onEdit }: {
   };
 
   return (
-    <div className="w-[340px] min-w-[340px] border-l border-[#d1d5db] bg-white overflow-y-auto">
+    <div className="h-full w-full border-l border-[#d1d5db] bg-white overflow-y-auto">
       <div className="p-4 border-b border-[#d1d5db] flex items-center justify-between">
         <h3 className="text-[14px] text-[#1F1F1F]">Foundation Preview</h3>
         <button onClick={onClose} className="p-1 hover:bg-[#F2F2F2]"><X size={14} className="text-[#6b7280]" /></button>
@@ -1033,29 +1082,6 @@ function RowActions({ item, onView, onEdit, onWithdraw, onDelete }: { item: Repo
   const renderTypeActions = () => {
     switch (item.type) {
       case 'Contract':
-        if (item.format === 'analogue') {
-          return (
-            <>
-              <a
-                href={item.externalUrl || '#'}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-1.5 hover:bg-[#F2F2F2] transition-colors"
-                title="Open Document"
-              >
-                <ExternalLink size={14} className="text-[#6b7280]" />
-              </a>
-              <a
-                href={item.externalUrl || '#'}
-                download
-                className="p-1.5 hover:bg-[#F2F2F2] transition-colors"
-                title="Download"
-              >
-                <Download size={14} className="text-[#6b7280]" />
-              </a>
-            </>
-          );
-        }
         return (
           <button
             onClick={() => onView(item)}
@@ -1094,28 +1120,6 @@ function RowActions({ item, onView, onEdit, onWithdraw, onDelete }: { item: Repo
             </button>
           </>
         );
-      case 'Analogue Document':
-        return (
-          <>
-            <a
-              href={item.externalUrl || '#'}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="p-1.5 hover:bg-[#F2F2F2] transition-colors"
-              title="Open Document"
-            >
-              <ExternalLink size={14} className="text-[#6b7280]" />
-            </a>
-            <a
-              href={item.externalUrl || '#'}
-              download
-              className="p-1.5 hover:bg-[#F2F2F2] transition-colors"
-              title="Download"
-            >
-              <Download size={14} className="text-[#6b7280]" />
-            </a>
-          </>
-        );
       default:
         return (
           <button
@@ -1138,7 +1142,7 @@ function RowActions({ item, onView, onEdit, onWithdraw, onDelete }: { item: Repo
           className="p-1.5 hover:bg-[#F2F2F2] transition-colors"
           title="More actions"
         >
-          <MoreHorizontal size={14} className="text-[#6b7280]" />
+          <MoreVertical size={14} className="text-[#6b7280]" />
         </button>
         {menuOpen && (
           <>
@@ -1171,19 +1175,17 @@ function RowActions({ item, onView, onEdit, onWithdraw, onDelete }: { item: Repo
 }
 
 function FacetPanel({
-  typeFilter, statusFilter, jurisdictionFilter, cobFilter,
-  onTypeChange, onStatusChange, onJurisdictionChange, onCobChange, onClose,
+  typeFilter, statusFilter, cobFilter,
+  onTypeChange, onStatusChange, onCobChange, onClose,
 }: {
-  typeFilter: string; statusFilter: string; jurisdictionFilter: string; cobFilter: string;
+  typeFilter: string; statusFilter: string; cobFilter: string;
   onTypeChange: (v: ItemType | '') => void;
   onStatusChange: (v: ItemStatus | '') => void;
-  onJurisdictionChange: (v: string) => void;
   onCobChange: (v: string) => void;
   onClose: () => void;
 }) {
   const types: ItemType[] = ['Contract', 'Component-Group', 'Component'];
   const statuses: ItemStatus[] = ['DRAFT', 'PENDING_APPROVAL', 'PUBLISHED', 'ARCHIVED', 'WITHDRAWN'];
-  const jurisdictions = ['UK', 'Global'];
   const cobs = ['Marine Hull', 'Marine Cargo', 'Aviation', 'Property', 'Casualty', 'Energy', 'Political Risk'];
 
   return (
@@ -1203,15 +1205,6 @@ function FacetPanel({
           <button onClick={() => onStatusChange('')} className={`px-2.5 py-1 text-[12px] transition-colors ${!statusFilter ? 'bg-[#C5143D] text-white' : 'bg-[#F2F2F2] text-[#1F1F1F] hover:bg-white'}`}>All</button>
           {statuses.map((s) => (
             <button key={s} onClick={() => onStatusChange(s)} className={`px-2.5 py-1 text-[12px] transition-colors ${statusFilter === s ? 'bg-[#C5143D] text-white' : 'bg-[#F2F2F2] text-[#1F1F1F] hover:bg-white'}`}>{statusLabels[s]}</button>
-          ))}
-        </div>
-      </div>
-      <div>
-        <p className="text-[11px] uppercase tracking-wider text-[#6b7280] mb-2">Jurisdiction</p>
-        <div className="flex flex-wrap gap-1.5">
-          <button onClick={() => onJurisdictionChange('')} className={`px-2.5 py-1 text-[12px] transition-colors ${!jurisdictionFilter ? 'bg-[#C5143D] text-white' : 'bg-[#F2F2F2] text-[#1F1F1F] hover:bg-white'}`}>All</button>
-          {jurisdictions.map((j) => (
-            <button key={j} onClick={() => onJurisdictionChange(j)} className={`px-2.5 py-1 text-[12px] transition-colors ${jurisdictionFilter === j ? 'bg-[#C5143D] text-white' : 'bg-[#F2F2F2] text-[#1F1F1F] hover:bg-white'}`}>{j}</button>
           ))}
         </div>
       </div>
@@ -1240,7 +1233,6 @@ function QuickPreviewPanel({ item, onClose, onViewCanvas, onEdit }: {
   // Metadata derived values
   const metaTypeToClass: Record<string, string> = {
     'Contract': 'CTR', 'Component-Group': 'CG', 'Component': 'CMP',
-    'Clause': 'CLS', 'Analogue Document': 'ANA',
   };
   const metaObjectClass = metaTypeToClass[item.type] ?? item.type;
   const metaIsDigital = item.format !== 'analogue';
@@ -1315,29 +1307,6 @@ function QuickPreviewPanel({ item, onClose, onViewCanvas, onEdit }: {
   const renderCTAs = () => {
     switch (item.type) {
       case 'Contract':
-        if (item.format === 'analogue') {
-          return (
-            <div className="flex gap-2">
-              <a
-                href={item.externalUrl || '#'}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-1 flex items-center justify-center gap-1.5 bg-[#C5143D] text-white px-3 py-2 text-[14px] no-underline hover:bg-[#F2F2F2] hover:text-[#C5143D] transition-all duration-200"
-                style={{ borderRadius: '0px' }}
-              >
-                <ExternalLink size={14} /> Open Document
-              </a>
-              <a
-                href={item.externalUrl || '#'}
-                download
-                className="flex items-center justify-center gap-1.5 bg-[#F2F2F2] text-[#1F1F1F] px-3 py-2 text-[14px] no-underline hover:bg-white transition-all duration-200"
-                style={{ borderRadius: '0px' }}
-              >
-                <Download size={14} /> Download
-              </a>
-            </div>
-          );
-        }
         return (
           <div className="flex gap-2">
             <button
@@ -1381,28 +1350,6 @@ function QuickPreviewPanel({ item, onClose, onViewCanvas, onEdit }: {
             </button>
           </div>
         );
-      case 'Analogue Document':
-        return (
-          <div className="flex gap-2">
-            <a
-              href={item.externalUrl || '#'}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex-1 flex items-center justify-center gap-1.5 bg-[#C5143D] text-white px-3 py-2 text-[14px] no-underline hover:bg-[#F2F2F2] hover:text-[#C5143D] transition-all duration-200"
-              style={{ borderRadius: '0px' }}
-            >
-              <ExternalLink size={14} /> Open Document
-            </a>
-            <a
-              href={item.externalUrl || '#'}
-              download
-              className="flex items-center justify-center gap-1.5 bg-[#F2F2F2] text-[#1F1F1F] px-3 py-2 text-[14px] no-underline hover:bg-white transition-all duration-200"
-              style={{ borderRadius: '0px' }}
-            >
-              <Download size={14} /> Download
-            </a>
-          </div>
-        );
       default:
         return (
           <div className="flex gap-2">
@@ -1419,7 +1366,7 @@ function QuickPreviewPanel({ item, onClose, onViewCanvas, onEdit }: {
   };
 
   return (
-    <div className="w-[340px] min-w-[340px] border-l border-[#d1d5db] bg-white overflow-y-auto">
+    <div className="h-full w-full border-l border-[#d1d5db] bg-white overflow-y-auto">
       <div className="p-4 border-b border-[#d1d5db] flex items-center justify-between">
         <h3 className="text-[14px] text-[#1F1F1F]">Quick Preview</h3>
         <button onClick={onClose} className="p-1 hover:bg-[#F2F2F2]"><X size={14} className="text-[#6b7280]" /></button>
