@@ -1,33 +1,19 @@
 import { NavLink, Outlet, useLocation, useParams, Link } from 'react-router';
 import { useState } from 'react';
-import { Bell, LogOut, Database, CheckSquare, Check, X, PanelLeftClose, PanelLeftOpen, ChevronRight } from 'lucide-react';
-import Lma from '../../imports/Lma5402';
+import { Bell, LogOut, Database, CheckSquare, Check, X, ChevronRight, Clock, FileDown } from 'lucide-react';
 import svgPaths from '../../imports/svg-l50t4u13nm';
 import { repositoryItems, foundationTypeLabels, dynamicFoundationItems } from './mock-data';
 
 const navItems = [
   { to: '/', label: 'Repository', icon: Database },
   { to: '/approvals', label: 'Approvals', icon: CheckSquare },
+  { to: '/export', label: 'Export', icon: FileDown },
 ];
-
-type SidebarMode = 'expanded' | 'tablet' | 'collapsed';
 
 export function RepositoryLayoutShell() {
   const [showNotifications, setShowNotifications] = useState(false);
-  const [sidebarMode, setSidebarMode] = useState<SidebarMode>('expanded');
   const location = useLocation();
   const params = useParams();
-
-  const isSidebarCollapsed = sidebarMode === 'collapsed';
-  const isSidebarTablet = sidebarMode === 'tablet';
-
-  const cycleSidebarMode = () => {
-    setSidebarMode((prev) => {
-      if (prev === 'expanded') return 'tablet';
-      if (prev === 'tablet') return 'collapsed';
-      return 'expanded';
-    });
-  };
 
   const isApprovals = location.pathname === '/approvals';
 
@@ -101,17 +87,37 @@ export function RepositoryLayoutShell() {
       time: '5 hours ago',
       historyId: 'hist-003',
     },
+    {
+      id: 'n3',
+      type: 'pending' as const,
+      itemName: 'C Trading Area Extension',
+      time: '1 day ago',
+      historyId: 'hist-004',
+    },
+    {
+      id: 'n4',
+      type: 'pending' as const,
+      itemName: 'C Breach of Warranty Relief',
+      time: '2 days ago',
+      historyId: 'hist-005',
+    },
+    {
+      id: 'n5',
+      type: 'pending' as const,
+      itemName: 'C Temperature Control Warranty',
+      time: '3 days ago',
+      historyId: 'hist-006',
+    },
   ];
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-background text-foreground" style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
+    <div className="flex h-screen w-screen overflow-hidden bg-background text-foreground" style={{ fontFamily: "'DM Sans', sans-serif" }}>
       {/* Left Sidebar — dark per design system secondary #1F1F1F */}
-      <aside className={`${isSidebarCollapsed ? 'w-[56px] min-w-[56px]' : isSidebarTablet ? 'w-[120px] min-w-[120px]' : 'w-[220px] min-w-[220px]'} bg-sidebar border-r border-sidebar-border flex flex-col transition-all duration-200`}>
+      <aside className="w-[120px] min-w-[120px] bg-sidebar border-r border-sidebar-border flex flex-col">
         {/* Logo area */}
-        <div className={`${isSidebarCollapsed ? 'p-2 pb-1' : isSidebarTablet ? 'p-3 pb-2' : 'p-4 pb-2'}`}>
-          <div className={`flex items-center justify-center py-2 ${isSidebarCollapsed ? 'px-0' : ''}`}>
-            {isSidebarCollapsed || isSidebarTablet ? (
-              <div className={isSidebarTablet ? 'w-[44px] h-[43px]' : 'w-[32px] h-[31px]'}>
+        <div className="p-3 pb-2">
+          <div className="flex items-center justify-center py-2">
+            <div className="w-[44px] h-[43px]">
                 <svg className="block w-full h-full" fill="none" preserveAspectRatio="xMidYMid meet" viewBox="0 0 32 31.2586">
                   <path d={svgPaths.p7060570} fill="white" />
                   <path d={svgPaths.p1e481500} fill="#C5143D" />
@@ -169,37 +175,28 @@ export function RepositoryLayoutShell() {
                   <path d={svgPaths.p3a552200} fill="#C5143D" />
                   <path d={svgPaths.p190b1480} fill="white" />
                 </svg>
-              </div>
-            ) : (
-              <div className="w-[150px] h-[50px]">
-                <Lma />
-              </div>
-            )}
+            </div>
           </div>
         </div>
 
         {/* Navigation */}
-        <nav className={`flex-1 ${isSidebarCollapsed ? 'px-1.5' : isSidebarTablet ? 'px-2' : 'px-3'} py-4`}>
-          {!isSidebarCollapsed && !isSidebarTablet && (
-            <p className="text-[11px] uppercase tracking-wider text-sidebar-foreground/40 mb-2 px-2">Pages</p>
-          )}
+        <nav className="flex-1 px-2 py-4">
           <ul className="space-y-0.5">
             {navItems.map((item) => (
               <li key={item.to}>
                 <NavLink
                   to={item.to}
                   end={item.to === '/'}
-                  title={isSidebarCollapsed ? item.label : undefined}
                   className={({ isActive }) =>
-                    `flex items-center ${isSidebarCollapsed ? 'justify-center px-0 py-2' : isSidebarTablet ? 'flex-col justify-center gap-1 px-2 py-3' : 'gap-2.5 px-3 py-2'} ${isSidebarTablet ? 'text-[11px]' : 'text-[13px]'} transition-colors ${
+                    `flex flex-col items-center justify-center gap-1 px-2 py-3 text-[11px] transition-colors ${
                       isActive
                         ? 'bg-[#C5143D] text-white'
                         : 'text-sidebar-foreground/80 hover:bg-sidebar-accent'
                     }`
                   }
                 >
-                  <item.icon size={isSidebarTablet ? 20 : 15} />
-                  {!isSidebarCollapsed && item.label}
+                  <item.icon size={20} />
+                  {item.label}
                 </NavLink>
               </li>
             ))}
@@ -207,28 +204,27 @@ export function RepositoryLayoutShell() {
         </nav>
 
         {/* Bottom section: Notifications, Logout, Collapse toggle */}
-        <div className={`${isSidebarCollapsed ? 'px-1.5' : isSidebarTablet ? 'px-2' : 'px-3'} pb-3 space-y-0.5`}>
+        <div className="px-2 pb-3 space-y-0.5">
           {/* Notification Bell */}
           <div className="relative">
             <button
-              className={`flex items-center ${isSidebarCollapsed ? 'justify-center w-full px-0 py-2' : isSidebarTablet ? 'flex-col justify-center gap-1 w-full px-2 py-3' : 'gap-2.5 w-full px-3 py-2'} ${isSidebarTablet ? 'text-[11px]' : 'text-[13px]'} text-sidebar-foreground/80 hover:bg-sidebar-accent transition-colors relative`}
+              className="flex flex-col items-center justify-center gap-1 w-full px-2 py-3 text-[11px] text-sidebar-foreground/80 hover:bg-sidebar-accent transition-colors relative"
               onClick={() => setShowNotifications(!showNotifications)}
-              title={isSidebarCollapsed ? 'Notifications' : undefined}
             >
-              <Bell size={isSidebarTablet ? 20 : 15} />
-              {!isSidebarCollapsed && <span>Notifications</span>}
-              <span className={`w-2 h-2 bg-[#C5143D] rounded-full ${isSidebarCollapsed ? 'absolute top-1.5 right-1.5' : isSidebarTablet ? 'absolute top-2 right-2' : 'ml-auto'}`} />
+              <Bell size={20} />
+              <span>Notifications</span>
+              <span className="w-2 h-2 bg-[#C5143D] rounded-full absolute top-2 right-2" />
             </button>
             {showNotifications && (
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setShowNotifications(false)} />
                 <div
                   className="absolute left-full bottom-0 ml-1 w-[380px] bg-white border border-[#d1d5db] shadow-lg z-50"
-                  style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}
+                  style={{ fontFamily: "'DM Sans', sans-serif" }}
                 >
                   <div className="flex items-center justify-between px-4 py-2.5 border-b border-[#d1d5db]">
                     <span className="text-[13px] text-[#1F1F1F]">Notifications</span>
-                    <span className="text-[11px] text-[#9ca3af]">{notifications.length} new</span>
+                    <span className="text-[11px] text-[#9ca3af]">{notifications.filter(n => n.type === 'pending').length} pending · {notifications.filter(n => n.type !== 'pending').length} decisions</span>
                   </div>
                   <div className="max-h-[320px] overflow-y-auto">
                     {notifications.map((n) => (
@@ -241,8 +237,10 @@ export function RepositoryLayoutShell() {
                         <div className="flex items-center gap-2 mb-1">
                           {n.type === 'approve' ? (
                             <span className="flex items-center justify-center w-5 h-5 bg-emerald-50 text-emerald-600"><Check size={12} /></span>
-                          ) : (
+                          ) : n.type === 'reject' ? (
                             <span className="flex items-center justify-center w-5 h-5 bg-red-50 text-[#C5143D]"><X size={12} /></span>
+                          ) : (
+                            <span className="flex items-center justify-center w-5 h-5 bg-amber-50 text-amber-600"><Clock size={12} /></span>
                           )}
                           <span className="text-[13px] text-[#1F1F1F]">{n.itemName}</span>
                           <span className="ml-auto text-[10px] text-[#9ca3af]">{n.time}</span>
@@ -257,25 +255,13 @@ export function RepositoryLayoutShell() {
 
           {/* Logout */}
           <button
-            className={`flex items-center ${isSidebarCollapsed ? 'justify-center w-full px-0 py-2' : isSidebarTablet ? 'flex-col justify-center gap-1 w-full px-2 py-3' : 'gap-2.5 w-full px-3 py-2'} ${isSidebarTablet ? 'text-[11px]' : 'text-[13px]'} text-sidebar-foreground/80 hover:bg-sidebar-accent transition-colors`}
-            title={isSidebarCollapsed ? 'Log Out' : undefined}
+            className="flex flex-col items-center justify-center gap-1 w-full px-2 py-3 text-[11px] text-sidebar-foreground/80 hover:bg-sidebar-accent transition-colors"
           >
-            <LogOut size={isSidebarTablet ? 20 : 15} />
-            {!isSidebarCollapsed && <span>Log Out</span>}
+            <LogOut size={20} />
+            <span>Log Out</span>
           </button>
 
-          {/* Divider */}
-          <div className="border-t border-sidebar-border my-1" />
 
-          {/* Collapse / Expand toggle */}
-          <button
-            onClick={cycleSidebarMode}
-            className={`flex items-center ${isSidebarCollapsed ? 'justify-center w-full px-0 py-2' : isSidebarTablet ? 'flex-col justify-center gap-1 w-full px-2 py-3' : 'gap-2.5 w-full px-3 py-2'} ${isSidebarTablet ? 'text-[11px]' : 'text-[13px]'} text-sidebar-foreground/80 hover:bg-sidebar-accent transition-colors`}
-            title={isSidebarCollapsed ? 'Expand Sidebar' : isSidebarTablet ? 'Collapse Sidebar' : 'Tablet Sidebar'}
-          >
-            {isSidebarCollapsed ? <PanelLeftOpen size={isSidebarTablet ? 20 : 15} /> : <PanelLeftClose size={isSidebarTablet ? 20 : 15} />}
-            {!isSidebarCollapsed && <span>{isSidebarTablet ? 'Collapse' : 'Tablet'}</span>}
-          </button>
         </div>
       </aside>
 

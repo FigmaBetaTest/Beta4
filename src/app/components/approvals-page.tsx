@@ -123,8 +123,8 @@ export function ApprovalsPage() {
       {/* Header */}
       <div className="px-6 py-3 border-b border-[#d1d5db] bg-white flex items-center justify-between">
         <div>
-          <h1 className="text-[18px] text-[#1F1F1F]" style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}>Approval Queue</h1>
-          <p className="text-[12px] text-[#6b7280]" style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}>Review and approve pending wording components</p>
+          <h1 className="text-[18px] text-[#1F1F1F]" style={{ fontFamily: "'DM Sans', sans-serif" }}>Approval Queue</h1>
+          <p className="text-[12px] text-[#6b7280]" style={{ fontFamily: "'DM Sans', sans-serif" }}>Review and approve pending wording components</p>
         </div>
       </div>
 
@@ -134,7 +134,7 @@ export function ApprovalsPage() {
           actionFeedback.type === 'approve'
             ? 'bg-emerald-50 border border-emerald-200 text-emerald-700'
             : 'bg-red-50 border border-red-200 text-[#C5143D]'
-        }`} style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
+        }`} style={{ fontFamily: "'DM Sans', sans-serif" }}>
           {actionFeedback.type === 'approve' ? <Check size={14} /> : <X size={14} />}
           <strong>{actionFeedback.name}</strong> has been {actionFeedback.type === 'approve' ? 'approved' : 'rejected'}. Author has been notified.
         </div>
@@ -153,7 +153,7 @@ export function ApprovalsPage() {
                   ? 'border-[#C5143D] text-[#C5143D] bg-white'
                   : 'border-transparent text-[#6b7280] hover:text-[#1F1F1F]'
               }`}
-              style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}
+              style={{ fontFamily: "'DM Sans', sans-serif" }}
             >
               <Clock size={12} />
               Pending
@@ -170,7 +170,7 @@ export function ApprovalsPage() {
                   ? 'border-[#C5143D] text-[#C5143D] bg-white'
                   : 'border-transparent text-[#6b7280] hover:text-[#1F1F1F]'
               }`}
-              style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}
+              style={{ fontFamily: "'DM Sans', sans-serif" }}
             >
               <History size={12} />
               History
@@ -182,7 +182,7 @@ export function ApprovalsPage() {
             <>
               <div className="flex-1 overflow-y-auto">
                 {queue.length === 0 ? (
-                  <div className="text-[13px] text-[#6b7280] py-8 text-center" style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
+                  <div className="text-[13px] text-[#6b7280] py-8 text-center" style={{ fontFamily: "'DM Sans', sans-serif" }}>
                     No items pending approval.
                   </div>
                 ) : (
@@ -198,18 +198,18 @@ export function ApprovalsPage() {
                         }`}
                       >
                         <div className="flex items-center gap-2 mb-1.5">
-                          <span className="text-[10px] text-[#9ca3af]" style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}>#{index + 1}</span>
+                          <span className="text-[10px] text-[#9ca3af]" style={{ fontFamily: "'DM Sans', sans-serif" }}>#{index + 1}</span>
                           <TypeBadge type={item.type} />
                         </div>
-                        <p className="text-[13px] text-[#1F1F1F] truncate" style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}>{item.name}</p>
+                        <p className="text-[13px] text-[#1F1F1F] truncate" style={{ fontFamily: "'DM Sans', sans-serif" }}>{item.name}</p>
                         <div className="flex items-center gap-3 mt-1.5">
-                          <span className="text-[11px] text-[#6b7280]" style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}>v{item.previousVersion} → v{item.version}</span>
-                          <span className="text-[11px] text-[#6b7280]" style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}>{item.submittedBy}</span>
+                          <span className="text-[11px] text-[#6b7280]" style={{ fontFamily: "'DM Sans', sans-serif" }}>v{item.previousVersion} → v{item.version}</span>
+                          <span className="text-[11px] text-[#6b7280]" style={{ fontFamily: "'DM Sans', sans-serif" }}>{item.submittedBy}</span>
                         </div>
                         {item.affectedItems && item.affectedItems.length > 0 && (
                           <div className="flex items-center gap-1 mt-1.5">
                             <Layers size={10} className="text-amber-600" />
-                            <span className="text-[10px] text-amber-700" style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
+                            <span className="text-[10px] text-amber-700" style={{ fontFamily: "'DM Sans', sans-serif" }}>
                               Bundled — {item.affectedItems.length} location(s)
                             </span>
                           </div>
@@ -234,7 +234,7 @@ export function ApprovalsPage() {
                           ? 'bg-[#C5143D] text-white'
                           : 'bg-[#F2F2F2] text-[#6b7280] hover:bg-white'
                       }`}
-                      style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}
+                      style={{ fontFamily: "'DM Sans', sans-serif" }}
                     >
                       {f === 'all' ? 'All' : f === 'approved' ? 'Approved' : 'Rejected'}
                     </button>
@@ -243,7 +243,7 @@ export function ApprovalsPage() {
               </div>
               <div className="flex-1 overflow-y-auto">
                 {filteredHistory.length === 0 ? (
-                  <div className="text-[13px] text-[#6b7280] py-8 text-center" style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
+                  <div className="text-[13px] text-[#6b7280] py-8 text-center" style={{ fontFamily: "'DM Sans', sans-serif" }}>
                     No history entries found.
                   </div>
                 ) : (
@@ -265,10 +265,10 @@ export function ApprovalsPage() {
                           <HistoryDecisionBadge decision={item.decision} />
                           <TypeBadge type={item.type} />
                         </div>
-                        <p className="text-[13px] text-[#1F1F1F] truncate" style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}>{item.name}</p>
+                        <p className="text-[13px] text-[#1F1F1F] truncate" style={{ fontFamily: "'DM Sans', sans-serif" }}>{item.name}</p>
                         <div className="flex items-center gap-3 mt-1.5">
-                          <span className="text-[11px] text-[#6b7280]" style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}>v{item.previousVersion} → v{item.version}</span>
-                          <span className="text-[11px] text-[#6b7280]" style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}>{item.decidedDate}</span>
+                          <span className="text-[11px] text-[#6b7280]" style={{ fontFamily: "'DM Sans', sans-serif" }}>v{item.previousVersion} → v{item.version}</span>
+                          <span className="text-[11px] text-[#6b7280]" style={{ fontFamily: "'DM Sans', sans-serif" }}>{item.decidedDate}</span>
                         </div>
                       </button>
                     ))}
@@ -288,7 +288,7 @@ export function ApprovalsPage() {
                 <div className="flex items-center gap-4">
                   <div>
                     <div className="flex items-center gap-2 mb-0.5">
-                      <h2 className="text-[15px] text-[#1F1F1F]" style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}>{selected.name}</h2>
+                      <h2 className="text-[15px] text-[#1F1F1F]" style={{ fontFamily: "'DM Sans', sans-serif" }}>{selected.name}</h2>
                       <TypeBadge type={selected.type} />
                     </div>
                   </div>
@@ -298,7 +298,7 @@ export function ApprovalsPage() {
                 </div>
               </div>
               {/* Meta row */}
-              <div className="flex items-center gap-5 mt-2 text-[11px] text-[#6b7280]" style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
+              <div className="flex items-center gap-5 mt-2 text-[11px] text-[#6b7280]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
                 <span className="flex items-center gap-1"><User size={11} /> {selected.submittedBy}</span>
                 <span className="flex items-center gap-1"><Calendar size={11} /> {selected.submittedDate}</span>
                 <span className="flex items-center gap-1"><Tag size={11} /> {selected.classOfBusiness}</span>
@@ -321,7 +321,7 @@ export function ApprovalsPage() {
                     ? 'border-[#C5143D] text-[#C5143D]'
                     : 'border-transparent text-[#6b7280] hover:text-[#1F1F1F]'
                 }`}
-                style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}
+                style={{ fontFamily: "'DM Sans', sans-serif" }}
               >
                 <GitCompareArrows size={13} /> Change Diff
               </button>
@@ -332,7 +332,7 @@ export function ApprovalsPage() {
                     ? 'border-[#C5143D] text-[#C5143D]'
                     : 'border-transparent text-[#6b7280] hover:text-[#1F1F1F]'
                 }`}
-                style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}
+                style={{ fontFamily: "'DM Sans', sans-serif" }}
               >
                 <Eye size={13} /> Rendered View
               </button>
@@ -363,14 +363,14 @@ export function ApprovalsPage() {
               {sidebarTab === 'pending' ? (
                 <>
                   <FileText size={40} className="text-[#d1d5db] mx-auto mb-3" />
-                  <p className="text-[14px] text-[#6b7280]" style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
+                  <p className="text-[14px] text-[#6b7280]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
                     {queue.length === 0 ? 'All items have been reviewed.' : 'Select an item to review.'}
                   </p>
                 </>
               ) : (
                 <>
                   <History size={40} className="text-[#d1d5db] mx-auto mb-3" />
-                  <p className="text-[14px] text-[#6b7280]" style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}>Select a history entry to view details.</p>
+                  <p className="text-[14px] text-[#6b7280]" style={{ fontFamily: "'DM Sans', sans-serif" }}>Select a history entry to view details.</p>
                 </>
               )}
             </div>
@@ -384,25 +384,25 @@ export function ApprovalsPage() {
           <div className="bg-white border border-[#d1d5db] w-[480px] shadow-xl">
             <div className="flex items-center justify-between p-4 border-b border-[#d1d5db]">
               <div>
-                <h3 className="text-[15px] text-[#1F1F1F]" style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}>Reject Component</h3>
-                <p className="text-[12px] text-[#6b7280]" style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}>Provide rationale for <strong>{selected.name}</strong></p>
+                <h3 className="text-[15px] text-[#1F1F1F]" style={{ fontFamily: "'DM Sans', sans-serif" }}>Reject Component</h3>
+                <p className="text-[12px] text-[#6b7280]" style={{ fontFamily: "'DM Sans', sans-serif" }}>Provide rationale for <strong>{selected.name}</strong></p>
               </div>
               <button onClick={() => setRejectDialogOpen(false)} className="p-1 hover:bg-[#F2F2F2]">
                 <X size={16} className="text-[#6b7280]" />
               </button>
             </div>
             <div className="p-4">
-              <label className="block text-[12px] text-[#6b7280] mb-1.5" style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
+              <label className="block text-[12px] text-[#6b7280] mb-1.5" style={{ fontFamily: "'DM Sans', sans-serif" }}>
                 Rationale (required)
               </label>
               <textarea
                 className="w-full h-[120px] bg-white text-[14px] text-[#1F1F1F] px-[12px] py-[8px] outline-none border border-[#d1d5db] resize-none focus:border-[#2563eb]"
-                style={{ borderRadius: '0px', fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: '14px' }}
+                style={{ borderRadius: '0px', fontFamily: "'DM Sans', sans-serif", fontSize: '14px' }}
                 placeholder="Explain why this component is being rejected..."
                 value={rejectRationale}
                 onChange={e => setRejectRationale(e.target.value)}
               />
-              <p className="text-[11px] text-[#9ca3af] mt-1" style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
+              <p className="text-[11px] text-[#9ca3af] mt-1" style={{ fontFamily: "'DM Sans', sans-serif" }}>
                 The author ({selected.submittedBy}) will receive this feedback.
               </p>
             </div>
@@ -410,7 +410,7 @@ export function ApprovalsPage() {
               <button
                 onClick={() => setRejectDialogOpen(false)}
                 className="px-[40px] py-[8px] text-[14px] bg-[#F2F2F2] text-[#1F1F1F] hover:bg-white transition-all duration-200 cursor-pointer"
-                style={{ borderRadius: '0px', fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}
+                style={{ borderRadius: '0px', fontFamily: "'DM Sans', sans-serif" }}
               >
                 Cancel
               </button>
@@ -422,7 +422,7 @@ export function ApprovalsPage() {
                     ? 'bg-[#C5143D] text-white hover:bg-[#F2F2F2] hover:text-[#C5143D]'
                     : 'bg-[#F2F2F2] text-[#9ca3af] cursor-not-allowed'
                 }`}
-                style={{ borderRadius: '0px', fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}
+                style={{ borderRadius: '0px', fontFamily: "'DM Sans', sans-serif" }}
               >
                 <X size={13} /> Reject
               </button>
@@ -463,7 +463,7 @@ function DiffView({ item }: { item: ApprovalItem }) {
         <div className="p-3">
           <div className="flex items-center gap-2 mb-3">
             <FileText size={13} className="text-[#6b7280]" />
-            <span className="text-[12px] uppercase tracking-wider text-[#6b7280]" style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}>Contents</span>
+            <span className="text-[12px] uppercase tracking-wider text-[#6b7280]" style={{ fontFamily: "'DM Sans', sans-serif" }}>Contents</span>
           </div>
           <TOCNav
             sections={locationGroups.map((g, i) => ({ id: `diff-group-${i}`, number: '', title: g.name, type: 'clause' as const }))}
@@ -484,12 +484,12 @@ function DiffView({ item }: { item: ApprovalItem }) {
           {/* Unified Changelog header */}
           <div className="flex items-center gap-2 mb-1">
             <GitCompareArrows size={14} className="text-[#6b7280]" />
-            <h3 className="text-[14px] text-[#1F1F1F]" style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
+            <h3 className="text-[14px] text-[#1F1F1F]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
               Changelog — {locationGroups.length} location(s), {totalChanges} change(s)
             </h3>
           </div>
           {locationGroups.length > 1 && (
-            <p className="text-[11px] text-[#6b7280] mb-4" style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
+            <p className="text-[11px] text-[#6b7280] mb-4" style={{ fontFamily: "'DM Sans', sans-serif" }}>
               All changes below are part of a single approval request.
             </p>
           )}
@@ -502,15 +502,15 @@ function DiffView({ item }: { item: ApprovalItem }) {
                 {/* Location header */}
                 <div className="flex items-center gap-2.5 px-4 py-2.5 bg-[#F2F2F2] border-b border-[#d1d5db]">
                   <TypeBadge type={group.type} />
-                  <span className="text-[13px] text-[#1F1F1F]" style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
+                  <span className="text-[13px] text-[#1F1F1F]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
                     {group.name}
                   </span>
                   {group.isSource && (
-                    <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 bg-[#C5143D] text-white" style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
+                    <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 bg-[#C5143D] text-white" style={{ fontFamily: "'DM Sans', sans-serif" }}>
                       Source
                     </span>
                   )}
-                  <span className="text-[10px] text-[#9ca3af] ml-auto" style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
+                  <span className="text-[10px] text-[#9ca3af] ml-auto" style={{ fontFamily: "'DM Sans', sans-serif" }}>
                     {group.changes.length} change(s)
                   </span>
                 </div>
@@ -540,14 +540,14 @@ function ChangeBlock({ change, config, nested }: {
     <div className={nested ? '' : 'border border-[#d1d5db]'}>
       {/* Change header */}
       <div className={`flex items-center gap-2 px-4 py-2 ${nested ? 'bg-[#FAFAFA]' : 'bg-[#FAFAFA] border-b border-[#d1d5db]'}`}>
-        <span className="text-[13px] text-[#1F1F1F]" style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}>{change.field}</span>
+        <span className="text-[13px] text-[#1F1F1F]" style={{ fontFamily: "'DM Sans', sans-serif" }}>{change.field}</span>
       </div>
       {/* Diff content */}
       <div className="p-4 space-y-2">
         <div className="flex gap-3">
           <div className="flex-1">
-            <span className="text-[10px] uppercase tracking-wider text-[#C5143D] mb-1 block" style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}>Removed</span>
-            <div className="text-[13px] leading-relaxed text-[#374151] bg-red-50/50 border border-red-100 p-3" style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
+            <span className="text-[10px] uppercase tracking-wider text-[#C5143D] mb-1 block" style={{ fontFamily: "'DM Sans', sans-serif" }}>Removed</span>
+            <div className="text-[13px] leading-relaxed text-[#374151] bg-red-50/50 border border-red-100 p-3" style={{ fontFamily: "'DM Sans', sans-serif" }}>
               {change.oldValue === '—' ? (
                 <span className="text-[#9ca3af] italic">Not present</span>
               ) : (
@@ -556,8 +556,8 @@ function ChangeBlock({ change, config, nested }: {
             </div>
           </div>
           <div className="flex-1">
-            <span className="text-[10px] uppercase tracking-wider text-emerald-700 mb-1 block" style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}>Added</span>
-            <div className="text-[13px] leading-relaxed text-[#374151] bg-emerald-50/50 border border-emerald-100 p-3" style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
+            <span className="text-[10px] uppercase tracking-wider text-emerald-700 mb-1 block" style={{ fontFamily: "'DM Sans', sans-serif" }}>Added</span>
+            <div className="text-[13px] leading-relaxed text-[#374151] bg-emerald-50/50 border border-emerald-100 p-3" style={{ fontFamily: "'DM Sans', sans-serif" }}>
               {change.newValue}
             </div>
           </div>
@@ -630,7 +630,7 @@ function RenderedView({ item }: { item: ApprovalItem }) {
     <div className="h-full overflow-y-auto">
     <div className="max-w-[900px] mx-auto py-6 px-8">
       {/* Render Key Legend */}
-      <div className="mb-6 p-3 bg-[#FAFAFA] border border-[#d1d5db] flex flex-wrap items-center gap-5 text-[12px]" style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
+      <div className="mb-6 p-3 bg-[#FAFAFA] border border-[#d1d5db] flex flex-wrap items-center gap-5 text-[12px]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
         <span className="text-[#6b7280]">Render Key:</span>
         <span className="flex items-center gap-1.5">
           <span className="flex items-center gap-px">
@@ -661,12 +661,12 @@ function RenderedView({ item }: { item: ApprovalItem }) {
       {/* Rendered wording */}
       <div className="border border-[#d1d5db] p-6">
         <div className="flex items-center gap-2 mb-4 pb-3 border-b border-[#d1d5db]">
-          <span className="text-[#6b7280] text-[13px]" style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}>{item.name}</span>
-          <span className="text-[11px] text-[#9ca3af]" style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}>v{item.version}</span>
+          <span className="text-[#6b7280] text-[13px]" style={{ fontFamily: "'DM Sans', sans-serif" }}>{item.name}</span>
+          <span className="text-[11px] text-[#9ca3af]" style={{ fontFamily: "'DM Sans', sans-serif" }}>v{item.version}</span>
         </div>
         <div className="space-y-4">
           {paragraphs.map((para, i) => (
-            <p key={i} className="text-[13px] leading-relaxed text-[#374151]" style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
+            <p key={i} className="text-[13px] leading-relaxed text-[#374151]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
               {renderContent(para)}
             </p>
           ))}
@@ -675,10 +675,10 @@ function RenderedView({ item }: { item: ApprovalItem }) {
         {/* Variable values */}
         {item.renderedVariables && item.renderedVariables.length > 0 && (
           <div className="mt-6 pt-4 border-t border-[#d1d5db]">
-            <p className="text-[11px] uppercase tracking-wider text-[#6b7280] mb-2" style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}>Variable Values</p>
+            <p className="text-[11px] uppercase tracking-wider text-[#6b7280] mb-2" style={{ fontFamily: "'DM Sans', sans-serif" }}>Variable Values</p>
             <div className="space-y-1">
               {item.renderedVariables.map(v => (
-                <div key={v.name} className="flex items-center gap-2 text-[12px]" style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
+                <div key={v.name} className="flex items-center gap-2 text-[12px]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
                   <span className="text-[#C5143D] bg-red-50 px-1">{v.name}</span>
                   <span className="text-[#9ca3af]">=</span>
                   <span className="text-[#374151]">{v.value}</span>
@@ -702,7 +702,7 @@ function DecisionBar({ onApprove, onReject, itemName, usedIn }: {
 }) {
   return (
     <div className="px-6 py-3 border-t border-[#d1d5db] bg-[#FAFAFA] flex items-center justify-between">
-      <div className="text-[12px] text-[#6b7280]" style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
+      <div className="text-[12px] text-[#6b7280]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
         {usedIn.length > 0 ? (
           <span className="flex items-center gap-1">
             <AlertTriangle size={12} className="text-amber-600" />
@@ -716,14 +716,14 @@ function DecisionBar({ onApprove, onReject, itemName, usedIn }: {
         <button
           onClick={onReject}
           className="flex items-center gap-1.5 px-[40px] py-[8px] text-[14px] bg-white text-[#C5143D] border border-[#C5143D] hover:bg-red-50 transition-all duration-200 cursor-pointer"
-          style={{ borderRadius: '0px', fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}
+          style={{ borderRadius: '0px', fontFamily: "'DM Sans', sans-serif" }}
         >
           <X size={13} /> Reject
         </button>
         <button
           onClick={onApprove}
           className="flex items-center gap-1.5 px-[40px] py-[8px] text-[14px] bg-[#C5143D] text-white hover:bg-[#F2F2F2] hover:text-[#C5143D] transition-all duration-200 cursor-pointer"
-          style={{ borderRadius: '0px', fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}
+          style={{ borderRadius: '0px', fontFamily: "'DM Sans', sans-serif" }}
         >
           <Check size={13} /> Approve
         </button>
@@ -761,14 +761,14 @@ function HistoryDetailView({ item }: { item: ApprovalHistoryItem }) {
         <div className="flex items-center justify-between">
           <div>
             <div className="flex items-center gap-2 mb-0.5">
-              <h2 className="text-[15px] text-[#1F1F1F]" style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}>{item.name}</h2>
+              <h2 className="text-[15px] text-[#1F1F1F]" style={{ fontFamily: "'DM Sans', sans-serif" }}>{item.name}</h2>
               <TypeBadge type={item.type} />
               <HistoryDecisionBadge decision={item.decision} />
             </div>
           </div>
         </div>
         {/* Meta row */}
-        <div className="flex items-center gap-5 mt-2 text-[11px] text-[#6b7280]" style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
+        <div className="flex items-center gap-5 mt-2 text-[11px] text-[#6b7280]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
           <span className="flex items-center gap-1"><User size={11} /> Submitted by {item.submittedBy}</span>
           <span className="flex items-center gap-1"><Calendar size={11} /> {item.submittedDate}</span>
           <span className="flex items-center gap-1"><Tag size={11} /> {item.classOfBusiness}</span>
@@ -788,7 +788,7 @@ function HistoryDetailView({ item }: { item: ApprovalHistoryItem }) {
           <div className="p-3">
             <div className="flex items-center gap-2 mb-3">
               <FileText size={13} className="text-[#6b7280]" />
-              <span className="text-[12px] uppercase tracking-wider text-[#6b7280]" style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}>Contents</span>
+              <span className="text-[12px] uppercase tracking-wider text-[#6b7280]" style={{ fontFamily: "'DM Sans', sans-serif" }}>Contents</span>
             </div>
             <TOCNav
               sections={locationGroups.map((g, i) => ({ id: `hist-group-${i}`, number: '', title: g.name, type: 'clause' as const }))}
@@ -810,9 +810,9 @@ function HistoryDetailView({ item }: { item: ApprovalHistoryItem }) {
             <div className="mb-5 p-3 bg-red-50 border border-red-200">
               <div className="flex items-center gap-2 mb-1.5">
                 <X size={13} className="text-[#C5143D]" />
-                <span className="text-[12px] text-[#C5143D]" style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}>Rejection Rationale</span>
+                <span className="text-[12px] text-[#C5143D]" style={{ fontFamily: "'DM Sans', sans-serif" }}>Rejection Rationale</span>
               </div>
-              <p className="text-[12px] text-[#374151]" style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
+              <p className="text-[12px] text-[#374151]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
                 {item.rationale}
               </p>
             </div>
@@ -821,12 +821,12 @@ function HistoryDetailView({ item }: { item: ApprovalHistoryItem }) {
           {/* Unified Changelog header */}
           <div className="flex items-center gap-2 mb-1">
             <GitCompareArrows size={14} className="text-[#6b7280]" />
-            <h3 className="text-[14px] text-[#1F1F1F]" style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
+            <h3 className="text-[14px] text-[#1F1F1F]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
               Changelog — {locationGroups.length} location(s), {totalChanges} change(s)
             </h3>
           </div>
           {locationGroups.length > 1 && (
-            <p className="text-[11px] text-[#6b7280] mb-4" style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
+            <p className="text-[11px] text-[#6b7280] mb-4" style={{ fontFamily: "'DM Sans', sans-serif" }}>
               {item.decision === 'approved'
                 ? 'All changes below were approved as a single approval request.'
                 : 'All changes below were part of a single approval request.'}
@@ -841,15 +841,15 @@ function HistoryDetailView({ item }: { item: ApprovalHistoryItem }) {
                 {/* Location header */}
                 <div className="flex items-center gap-2.5 px-4 py-2.5 bg-[#F2F2F2] border-b border-[#d1d5db]">
                   <TypeBadge type={group.type} />
-                  <span className="text-[13px] text-[#1F1F1F]" style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
+                  <span className="text-[13px] text-[#1F1F1F]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
                     {group.name}
                   </span>
                   {group.isSource && (
-                    <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 bg-[#C5143D] text-white" style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
+                    <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 bg-[#C5143D] text-white" style={{ fontFamily: "'DM Sans', sans-serif" }}>
                       Source
                     </span>
                   )}
-                  <span className="text-[10px] text-[#9ca3af] ml-auto" style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
+                  <span className="text-[10px] text-[#9ca3af] ml-auto" style={{ fontFamily: "'DM Sans', sans-serif" }}>
                     {group.changes.length} change(s)
                   </span>
                 </div>
@@ -875,7 +875,7 @@ function HistoryDetailView({ item }: { item: ApprovalHistoryItem }) {
         ) : (
           <X size={13} className="text-[#C5143D]" />
         )}
-        <span className={`text-[12px] ${item.decision === 'approved' ? 'text-emerald-700' : 'text-[#C5143D]'}`} style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
+        <span className={`text-[12px] ${item.decision === 'approved' ? 'text-emerald-700' : 'text-[#C5143D]'}`} style={{ fontFamily: "'DM Sans', sans-serif" }}>
           This request was {item.decision} by {item.decidedBy} on {item.decidedDate}.
         </span>
       </div>
@@ -894,14 +894,14 @@ function HistoryChangeBlock({ change, config, decision }: {
     <div>
       {/* Change header */}
       <div className="flex items-center gap-2 px-4 py-2 bg-[#FAFAFA]">
-        <span className="text-[13px] text-[#1F1F1F]" style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}>{change.field}</span>
+        <span className="text-[13px] text-[#1F1F1F]" style={{ fontFamily: "'DM Sans', sans-serif" }}>{change.field}</span>
       </div>
       {/* Diff content */}
       <div className="p-4 space-y-2">
         <div className="flex gap-3">
           <div className="flex-1">
-            <span className="text-[10px] uppercase tracking-wider text-[#C5143D] mb-1 block" style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}>Previous</span>
-            <div className="text-[13px] leading-relaxed text-[#374151] bg-red-50/50 border border-red-100 p-3" style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
+            <span className="text-[10px] uppercase tracking-wider text-[#C5143D] mb-1 block" style={{ fontFamily: "'DM Sans', sans-serif" }}>Previous</span>
+            <div className="text-[13px] leading-relaxed text-[#374151] bg-red-50/50 border border-red-100 p-3" style={{ fontFamily: "'DM Sans', sans-serif" }}>
               {change.oldValue === '—' ? (
                 <span className="text-[#9ca3af] italic">Not present</span>
               ) : (
@@ -910,12 +910,12 @@ function HistoryChangeBlock({ change, config, decision }: {
             </div>
           </div>
           <div className="flex-1">
-            <span className="text-[10px] uppercase tracking-wider text-emerald-700 mb-1 block" style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}>Proposed</span>
+            <span className="text-[10px] uppercase tracking-wider text-emerald-700 mb-1 block" style={{ fontFamily: "'DM Sans', sans-serif" }}>Proposed</span>
             <div className={`text-[13px] leading-relaxed text-[#374151] p-3 border ${
               decision === 'approved'
                 ? 'bg-emerald-50/50 border-emerald-100'
                 : 'bg-gray-50 border-gray-200 opacity-60'
-            }`} style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
+            }`} style={{ fontFamily: "'DM Sans', sans-serif" }}>
               <span className={decision === 'rejected' ? 'line-through decoration-[#C5143D]/40' : ''}>{change.newValue}</span>
             </div>
           </div>

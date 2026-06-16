@@ -756,7 +756,7 @@ function DynamicTableSetupDialog({ onClose, onInsert }: {
               value={govVariable}
               onChange={(e) => setGovVariable(e.target.value)}
               className={inputStyle}
-              style={{ borderRadius: '0px', fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: '14px' }}
+              style={{ borderRadius: '0px', fontFamily: "'DM Sans', sans-serif", fontSize: '14px' }}
             >
               <option value="">Select a variable...</option>
               {govVariableOptions.map(opt => (
@@ -1018,7 +1018,7 @@ function RichTextEditorOld({ content, onChange, isValidated, textareaRef, saveCu
             onChange={(e) => { onChange(e.target.value); saveCursorPosition(); }}
             onClick={saveCursorPosition}
             onKeyUp={saveCursorPosition}
-            style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}
+            style={{ fontFamily: "'DM Sans', sans-serif" }}
           />
 
           {/* Preview of rendered content */}
@@ -1661,7 +1661,7 @@ function EditorMetadataPanel({ component }: { component: typeof repositoryItems[
   };
 
   const lifecycleColors: Record<string, string> = {
-    PUBLISHED: 'bg-emerald-100 text-emerald-700 border-emerald-200',
+    ACTIVE: 'bg-emerald-100 text-emerald-700 border-emerald-200',
     DRAFT: 'bg-gray-100 text-gray-600 border-gray-200',
     PENDING_APPROVAL: 'bg-amber-100 text-amber-700 border-amber-200',
     ARCHIVED: 'bg-blue-100 text-blue-700 border-blue-200',
@@ -1681,13 +1681,13 @@ function EditorMetadataPanel({ component }: { component: typeof repositoryItems[
 
   const SysRow = ({ label, value }: { label: string; value: React.ReactNode }) => (
     <div className="flex items-start gap-2 py-1.5 border-b border-[#f3f4f6] last:border-0">
-      <span className="text-[11px] text-[#9ca3af] shrink-0" style={{ width: '110px', fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial" }}>{label}</span>
-      <span className="text-[12px] text-[#1F1F1F] flex-1 break-all" style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial" }}>{value}</span>
+      <span className="text-[11px] text-[#9ca3af] shrink-0" style={{ width: '110px', fontFamily: "'DM Sans', sans-serif" }}>{label}</span>
+      <span className="text-[12px] text-[#1F1F1F] flex-1 break-all" style={{ fontFamily: "'DM Sans', sans-serif" }}>{value}</span>
     </div>
   );
 
   return (
-    <div className="flex-1 flex flex-col overflow-y-auto" style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
+    <div className="flex-1 flex flex-col overflow-y-auto" style={{ fontFamily: "'DM Sans', sans-serif" }}>
       {/* Header */}
       <div className="px-4 pt-4 pb-3 border-b border-[#d1d5db]">
         <h4 className="text-[13px] font-semibold text-[#1F1F1F] mb-1.5">{component.name}</h4>

@@ -95,7 +95,7 @@ const BODY_LABELS: Record<FoundationType, string> = {
   DEF: 'Definition Text',
   GV: 'Variable Expression',
   LOV: 'Values',
-  DM: 'Metadata Description',
+  ATT: 'Metadata Description',
   TEC: 'Technical Content',
   SYS: 'System Content',
 };
@@ -104,7 +104,7 @@ const TITLE_PLACEHOLDERS: Record<FoundationType, string> = {
   DEF: 'e.g. Total Loss, Named Insured, Deductible...',
   GV: 'e.g. Coverage Limit, Deductible Amount...',
   LOV: 'e.g. Permitted Vessel Types, Coverage Classes...',
-  DM: 'e.g. Risk Classification, Segment Attributes...',
+  ATT: 'e.g. Risk Classification, Segment Attributes...',
   TEC: 'e.g. Drafting Guidelines, Clause Numbering Rules...',
   SYS: 'e.g. Workflow Instructions, Approval Process...',
 };
@@ -113,7 +113,7 @@ const BODY_PLACEHOLDERS: Record<FoundationType, string> = {
   DEF: 'Enter the definition text. Describe the term clearly and concisely as it applies across contracts...',
   GV: 'Enter the variable expression or formula. Use {{VARIABLE_NAME}} syntax to reference data elements...',
   LOV: 'Enter each permitted value on a new line, or as a comma-separated list...',
-  DM: 'Describe the metadata attributes and their meaning for this object type...',
+  ATT: 'Describe the metadata attributes and their meaning for this object type...',
   TEC: 'Enter technical guidance, drafting notes, or system-level instructions...',
   SYS: 'Enter operational guidance, process instructions, or workflow notes...',
 };
@@ -128,7 +128,7 @@ export function FoundationEditor() {
   const existingItem = dynamicFoundationItems.find(i => i.id === id);
   const typeParam = searchParams.get('type') as FoundationType | null;
   const itemType: FoundationType = existingItem?.type ?? typeParam ?? 'DEF';
-  const targetTab = itemType === 'DM' ? 'metadata' : 'foundations';
+  const targetTab = itemType === 'ATT' ? 'metadata' : 'foundations';
   const typeLabel = foundationTypeLabels[itemType];
   const bodyLabel = BODY_LABELS[itemType];
   const titlePlaceholder = TITLE_PLACEHOLDERS[itemType];
@@ -198,7 +198,7 @@ export function FoundationEditor() {
       systemGuidanceMode: gvSysGuidanceMode || undefined,
       systemGuidance: gvSystemGuidance || undefined,
     } : {};
-    const dmFields = itemType === 'DM' ? {
+    const dmFields = itemType === 'ATT' ? {
       dmType: dmType || undefined,
       dmApplicability: dmApplicability.length > 0 ? dmApplicability : undefined,
       body: dmDescription || undefined,
@@ -500,7 +500,7 @@ export function FoundationEditor() {
                   )}
                 </div>
               </>
-            ) : itemType === 'DM' ? (
+            ) : itemType === 'ATT' ? (
               /* DM-specific fields */
               <>
                 {/* Type */}
@@ -649,9 +649,9 @@ export function FoundationEditor() {
             </button>
             <button
               onClick={handleCreate}
-              disabled={!title.trim() || (itemType === 'GV' && (!gvQuestion.trim() || !gvType || !gvTypespecifica)) || (itemType === 'DM' && (!dmType || dmApplicability.length === 0 || !dmDescription.trim()))}
+              disabled={!title.trim() || (itemType === 'GV' && (!gvQuestion.trim() || !gvType || !gvTypespecifica)) || (itemType === 'ATT' && (!dmType || dmApplicability.length === 0 || !dmDescription.trim()))}
               className={`px-[40px] py-[8px] text-[14px] flex items-center gap-1.5 transition-all duration-200 ${
-                (title.trim() && (itemType !== 'GV' || (gvQuestion.trim() && gvType && gvTypespecifica)) && (itemType !== 'DM' || (dmType && dmApplicability.length > 0 && dmDescription.trim())))
+                (title.trim() && (itemType !== 'GV' || (gvQuestion.trim() && gvType && gvTypespecifica)) && (itemType !== 'ATT' || (dmType && dmApplicability.length > 0 && dmDescription.trim())))
                   ? 'bg-[#C5143D] text-white hover:bg-[#F2F2F2] hover:text-[#C5143D] cursor-pointer'
                   : 'bg-[#F2F2F2] text-[#9ca3af] cursor-not-allowed'
               }`}

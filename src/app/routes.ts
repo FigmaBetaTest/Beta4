@@ -5,6 +5,7 @@ import { ContractCanvas } from './components/contract-canvas';
 import { ComponentEditor } from './components/component-editor';
 import { FoundationEditor } from './components/foundation-editor';
 import { ApprovalsPage } from './components/approvals-page';
+import { ExportPage } from './components/export-page';
 
 export const router = createBrowserRouter([
   {
@@ -16,6 +17,7 @@ export const router = createBrowserRouter([
       { path: 'editor/:id', Component: ComponentEditor },
       { path: 'foundation-editor/:id', Component: FoundationEditor },
       { path: 'approvals', Component: ApprovalsPage },
+      { path: 'export', Component: ExportPage },
     ],
   },
 ]);

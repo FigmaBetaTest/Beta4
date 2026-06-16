@@ -1,7 +1,7 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { useNavigate, useSearchParams, useLocation } from 'react-router';
 import { toast } from 'sonner';
-import { Search, Filter, Plus, Eye, Edit3, MoreVertical, ChevronDown, X, ChevronLeft, ChevronRight, ArrowUp, ArrowDown, FileText, Table2, ArrowRight, Check, Upload, Trash2, Ban, BookOpen } from 'lucide-react';
+import { Search, Filter, Plus, Eye, Edit3, MoreVertical, ChevronDown, ChevronRight, X, ArrowUp, ArrowDown, FileText, Table2, ArrowRight, Check, Upload, Trash2, Ban, BookOpen } from 'lucide-react';
 import { repositoryItems, dynamicRepositoryItems, foundationItems, dynamicFoundationItems, foundationTypeLabels, contractSections, componentGroupSections, componentSections, statusLabels, type RepositoryItem, type ItemType, type ItemStatus, type ContractSection, type FoundationItem, type FoundationType } from './mock-data';
 import { TypeBadge, StatusBadge } from './type-badge';
 import { MetaKV } from './meta-kv';
@@ -27,10 +27,8 @@ export function RepositoryPage() {
   const [sortDir, setSortDir] = useState<SortDir>('asc');
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [localItems, setLocalItems] = useState<RepositoryItem[]>(() => [...repositoryItems, ...dynamicRepositoryItems]);
-  const [objPage, setObjPage] = useState(1);
-  const [foundPage, setFoundPage] = useState(1);
-  const [dynamicPageSize, setDynamicPageSize] = useState(15);
-  const tableAreaRef = useRef<HTMLDivElement>(null);
+  const [objLimit, setObjLimit] = useState(20);
+  const [foundLimit, setFoundLimit] = useState(20);
 
   // Foundations tab state
   const [foundSearch, setFoundSearch] = useState('');
@@ -49,23 +47,8 @@ export function RepositoryPage() {
   useEffect(() => {
     setLocalFoundItems([...foundationItems, ...dynamicFoundationItems]);
   }, [location.key]);
-  useEffect(() => { setObjPage(1); }, [searchQuery, typeFilter, statusFilter, cobFilter, dynamicPageSize]);
-  useEffect(() => { setFoundPage(1); }, [foundSearch, foundTypeFilter, foundStatusFilter, foundSegmentFilter, foundOwnerFilter, activeTab, dynamicPageSize]);
-  useEffect(() => {
-    const el = tableAreaRef.current;
-    if (!el) return;
-    const THEAD = 38;
-    const PAGINATION = 44;
-    const ROW = 45;
-    const calc = () => {
-      const h = el.clientHeight;
-      setDynamicPageSize(Math.max(1, Math.floor((h - THEAD - PAGINATION) / ROW)));
-    };
-    calc();
-    const ro = new ResizeObserver(calc);
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, []);
+  useEffect(() => { setObjLimit(20); }, [searchQuery, typeFilter, statusFilter, cobFilter]);
+  useEffect(() => { setFoundLimit(20); }, [foundSearch, foundTypeFilter, foundStatusFilter, foundSegmentFilter, foundOwnerFilter, activeTab]);
 
   const filteredItems = useMemo(() => {
     let items = localItems;
@@ -127,7 +110,7 @@ export function RepositoryPage() {
 
   // Foundations computed + handlers
   const filteredFoundations = useMemo(() => {
-    let items = localFoundItems.filter(i => i.type !== 'DM');
+    let items = localFoundItems.filter(i => i.type !== 'ATT');
     if (foundSearch) {
       const q = foundSearch.toLowerCase();
       items = items.filter(i => i.name.toLowerCase().includes(q) || i.type.toLowerCase().includes(q));
@@ -148,7 +131,7 @@ export function RepositoryPage() {
   }, [foundSearch, foundTypeFilter, foundStatusFilter, foundSegmentFilter, foundOwnerFilter, foundSortKey, foundSortDir, localFoundItems]);
 
   const filteredMetadataFoundations = useMemo(() => {
-    let items = localFoundItems.filter(i => i.type === 'DM');
+    let items = localFoundItems.filter(i => i.type === 'ATT');
     if (foundSearch) {
       const q = foundSearch.toLowerCase();
       items = items.filter(i => i.name.toLowerCase().includes(q) || i.type.toLowerCase().includes(q));
@@ -196,8 +179,8 @@ export function RepositoryPage() {
   const isFoundationTab = activeTab === 'foundations' || activeTab === 'metadata';
   const activeFoundationRows = isMetadataTab ? filteredMetadataFoundations : filteredFoundations;
   const activeFoundationItems = isMetadataTab
-    ? localFoundItems.filter(i => i.type === 'DM')
-    : localFoundItems.filter(i => i.type !== 'DM');
+    ? localFoundItems.filter(i => i.type === 'ATT')
+    : localFoundItems.filter(i => i.type !== 'ATT');
 
   useEffect(() => {
     // Prevent hidden filter controls from affecting results.
@@ -206,19 +189,31 @@ export function RepositoryPage() {
     } else {
       setFoundSegmentFilter('');
     }
-  }, [isMetadataTab]);
+    // Close preview panels when switching tabs
+    setSelectedRow(null);
+    setSelectedFoundRow(null);
+  }, [activeTab]);
 
-  const objTotalPages = Math.max(1, Math.ceil(filteredItems.length / dynamicPageSize));
-  const pagedItems = filteredItems.slice((objPage - 1) * dynamicPageSize, objPage * dynamicPageSize);
-  const foundTotalPages = Math.max(1, Math.ceil(activeFoundationRows.length / dynamicPageSize));
-  const pagedFoundRows = activeFoundationRows.slice((foundPage - 1) * dynamicPageSize, foundPage * dynamicPageSize);
+  const visibleItems = filteredItems.slice(0, objLimit);
+  const visibleFoundRows = activeFoundationRows.slice(0, foundLimit);
+
+  const handleObjScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const el = e.currentTarget;
+    if (el.scrollHeight - el.scrollTop - el.clientHeight < 100)
+      setObjLimit(prev => Math.min(prev + 20, filteredItems.length));
+  };
+  const handleFoundScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const el = e.currentTarget;
+    if (el.scrollHeight - el.scrollTop - el.clientHeight < 100)
+      setFoundLimit(prev => Math.min(prev + 20, activeFoundationRows.length));
+  };
 
   return (
     <div className="relative flex h-full overflow-hidden">
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Page Header */}
-        <div className="p-6 pb-0 flex-1 min-h-0 flex flex-col">
+        <div className="p-6 pb-6 flex-1 min-h-0 flex flex-col">
           <div className="flex items-center justify-between mb-1">
             <h1 className="text-[22px] text-[#1F1F1F] leading-[90%]">Wording Objects Library v0.5</h1>
           </div>
@@ -250,7 +245,7 @@ export function RepositoryPage() {
               onClick={() => setActiveTab('metadata')}
               className={`px-4 py-2 text-[13px] border-b-2 transition-colors ${activeTab === 'metadata' ? 'border-[#C5143D] text-[#C5143D]' : 'border-transparent text-[#6b7280] hover:text-[#1F1F1F]'}`}
             >
-              Metadata
+              Attributes
             </button>
           </div>
 
@@ -264,7 +259,7 @@ export function RepositoryPage() {
                     type="text"
                     placeholder="Search for names or objects"
                     className="flex-1 bg-transparent text-[14px] text-[#1F1F1F] placeholder:text-[#9ca3af] outline-none border-none"
-                    style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: '14px' }}
+                    style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '14px' }}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
@@ -317,9 +312,9 @@ export function RepositoryPage() {
                   <Search size={15} className="text-[#6b7280]" />
                   <input
                     type="text"
-                    placeholder={isMetadataTab ? 'Search metadata foundations...' : 'Search foundations...'}
+                    placeholder={isMetadataTab ? 'Search attributes...' : 'Search foundations...'}
                     className="flex-1 bg-transparent text-[14px] text-[#1F1F1F] placeholder:text-[#9ca3af] outline-none border-none"
-                    style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: '14px' }}
+                    style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '14px' }}
                     value={foundSearch}
                     onChange={(e) => setFoundSearch(e.target.value)}
                   />
@@ -342,7 +337,7 @@ export function RepositoryPage() {
                   className="bg-[#C5143D] text-white px-[40px] py-[8px] text-[14px] flex items-center gap-1.5 hover:bg-[#F2F2F2] hover:text-[#C5143D] transition-all duration-200 cursor-pointer"
                   style={{ borderRadius: '0px' }}
                   onClick={() => {
-                    if (isMetadataTab) navigate('/foundation-editor/new?type=DM&isNew=true');
+                    if (isMetadataTab) navigate('/foundation-editor/new?type=ATT&isNew=true');
                     else setShowCreateFoundDialog(true);
                   }}
                 >
@@ -360,9 +355,9 @@ export function RepositoryPage() {
                   segmentFilter={foundSegmentFilter}
                   ownerFilter={foundOwnerFilter}
                   items={activeFoundationItems}
-                  availableTypes={isMetadataTab ? ['DM'] : ['DEF', 'GV', 'LOV', 'TEC', 'SYS']}
+                  availableTypes={isMetadataTab ? ['ATT'] : ['DEF', 'GV', 'LOV', 'TEC', 'SYS']}
                   showTypeFilter={!isMetadataTab}
-                  showSegmentFilter={isMetadataTab}
+                  showSegmentFilter={false}
                   onTypeChange={setFoundTypeFilter}
                   onStatusChange={setFoundStatusFilter}
                   onSegmentChange={setFoundSegmentFilter}
@@ -374,12 +369,11 @@ export function RepositoryPage() {
           )}
 
           {/* Results Area */}
-          <div ref={tableAreaRef} className="flex-1 min-h-0 flex flex-col pt-2">
+          <div className="flex-1 min-h-0 flex flex-col pt-2">
 
             {/* Objects Table */}
             {activeTab === 'objects' && (
-              <div className="flex-1 min-h-0 flex flex-col">
-                <div className="flex-1 min-h-0 overflow-hidden border border-[#d1d5db] bg-white">
+              <div className="flex-1 min-h-0 overflow-y-auto border border-[#d1d5db] bg-white" onScroll={handleObjScroll}>
                   <table className="w-full table-fixed">
                 <colgroup>
                   <col style={{ width: '28%' }} />
@@ -391,16 +385,16 @@ export function RepositoryPage() {
                   <col style={{ width: '8%' }} />
                   <col style={{ width: '8%' }} />
                 </colgroup>
-                <thead className="bg-[#F2F2F2]">
+                <thead className="sticky top-0 z-10 bg-[#F2F2F2]">
                   <tr className="border-b border-[#d1d5db]">
                     {([
                       { key: 'name' as SortKey, label: 'Name' },
-                      { key: 'type' as SortKey, label: 'Object' },
+                      { key: 'type' as SortKey, label: 'Type' },
                       { key: 'version' as SortKey, label: 'Version' },
                       { key: 'status' as SortKey, label: 'Status' },
                       { key: 'classOfBusiness' as SortKey, label: 'Class of Business' },
-                      { key: 'lastModified' as SortKey, label: 'Last Modified' },
-                      { key: 'owner' as SortKey, label: 'Owner' },
+                      { key: 'lastModified' as SortKey, label: 'Last Updated' },
+                      { key: 'owner' as SortKey, label: 'Editor' },
                     ]).map(col => (
                       <th
                         key={col.key}
@@ -422,7 +416,7 @@ export function RepositoryPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {pagedItems.map((item) => (
+                  {visibleItems.map((item) => (
                     <tr
                       key={item.id}
                       onClick={() => handleRowClick(item)}
@@ -452,26 +446,23 @@ export function RepositoryPage() {
               </table>
             </div>
 
-            {/* Objects Pagination */}
-            <TablePagination page={objPage} totalPages={objTotalPages} total={filteredItems.length} pageSize={dynamicPageSize} onPage={setObjPage} />
-          </div>
           )}
 
             {/* Foundations Table */}
             {isFoundationTab && (
-              <div className="flex-1 min-h-0 flex flex-col">
+              <>
                 {activeFoundationRows.length === 0 ? (
                   <div className="flex-1 flex flex-col items-center justify-center text-center p-12 border border-dashed border-[#d1d5db] bg-white">
                     <BookOpen size={32} className="text-[#d1d5db] mb-3" />
-                    <p className="text-[14px] text-[#6b7280] mb-1">{isMetadataTab ? 'No Metadata Foundations yet.' : 'No Foundations yet.'}</p>
+                    <p className="text-[14px] text-[#6b7280] mb-1">{isMetadataTab ? 'No Attributes yet.' : 'No Foundations yet.'}</p>
                     <p className="text-[13px] text-[#9ca3af]">
                       {isMetadataTab
-                        ? 'Create Descriptive Metadata objects for contracts and components.'
+                        ? 'Create Attribute objects for contracts and components.'
                         : 'Create a Definition, Governing Variable, LOV, Technical or System Guidance.'}
                     </p>
                     <button
                       onClick={() => {
-                        if (isMetadataTab) navigate('/foundation-editor/new?type=DM&isNew=true');
+                        if (isMetadataTab) navigate('/foundation-editor/new?type=ATT&isNew=true');
                         else setShowCreateFoundDialog(true);
                       }}
                       className="mt-4 bg-[#C5143D] text-white px-5 py-2 text-[13px] flex items-center gap-1.5 hover:bg-[#F2F2F2] hover:text-[#C5143D] transition-all duration-200"
@@ -480,26 +471,26 @@ export function RepositoryPage() {
                     </button>
                   </div>
                 ) : (
-                  <div className="flex-1 min-h-0 overflow-hidden border border-[#d1d5db] bg-white">
+                  <div className="flex-1 min-h-0 overflow-y-auto border border-[#d1d5db] bg-white" onScroll={handleFoundScroll}>
                     <table className="w-full table-fixed">
                       <colgroup>
-                        <col style={{ width: '30%' }} />
-                        <col style={{ width: '11%' }} />
+                        <col style={{ width: isMetadataTab ? '41%' : '30%' }} />
+                        {!isMetadataTab && <col style={{ width: '11%' }} />}
                         <col style={{ width: '9%' }} />
                         <col style={{ width: '14%' }} />
                         <col style={{ width: '15%' }} />
                         <col style={{ width: '12%' }} />
                         <col style={{ width: '9%' }} />
                       </colgroup>
-                      <thead className="bg-[#F2F2F2]">
+                      <thead className="sticky top-0 z-10 bg-[#F2F2F2]">
                         <tr className="border-b border-[#d1d5db]">
                           {([
                             { key: 'name' as keyof FoundationItem, label: 'Name' },
-                            { key: 'type' as keyof FoundationItem, label: 'Type' },
+                            ...(!isMetadataTab ? [{ key: 'type' as keyof FoundationItem, label: 'Type' }] : []),
                             { key: 'version' as keyof FoundationItem, label: 'Version' },
                             { key: 'status' as keyof FoundationItem, label: 'Status' },
                             { key: 'lastModified' as keyof FoundationItem, label: 'Last Updated' },
-                            { key: 'owner' as keyof FoundationItem, label: 'Owner' },
+                            { key: 'owner' as keyof FoundationItem, label: 'Editor' },
                           ]).map(col => (
                             <th
                               key={col.key}
@@ -521,7 +512,7 @@ export function RepositoryPage() {
                         </tr>
                       </thead>
                       <tbody>
-                        {pagedFoundRows.map((item) => (
+                        {visibleFoundRows.map((item) => (
                           <tr
                             key={item.id}
                             onClick={() => setSelectedFoundRow(selectedFoundRow?.id === item.id ? null : item)}
@@ -530,9 +521,11 @@ export function RepositoryPage() {
                             }`}
                           >
                             <td className="px-4 py-3 text-[13px] text-[#1F1F1F] max-w-0 truncate">{item.name}</td>
-                            <td className="px-4 py-3 max-w-0 overflow-hidden">
-                              <span className="inline-block px-1.5 py-0.5 text-[11px] font-mono bg-[#F2F2F2] text-[#6b7280] truncate">{item.type}</span>
-                            </td>
+                            {!isMetadataTab && (
+                              <td className="px-4 py-3 max-w-0 overflow-hidden">
+                                <span className="inline-block px-1.5 py-0.5 text-[11px] font-mono bg-[#F2F2F2] text-[#6b7280] truncate">{item.type}</span>
+                              </td>
+                            )}
                             <td className="px-4 py-3 text-[13px] text-[#6b7280] max-w-0 truncate">{item.version}</td>
                             <td className="px-4 py-3 max-w-0 overflow-hidden"><div className="truncate"><StatusBadge status={item.status} /></div></td>
                             <td className="px-4 py-3 text-[13px] text-[#6b7280] max-w-0 truncate">{item.lastModified}</td>
@@ -553,11 +546,7 @@ export function RepositoryPage() {
                   </div>
                 )}
 
-                {/* Foundations Pagination */}
-                {activeFoundationRows.length > 0 && (
-                  <TablePagination page={foundPage} totalPages={foundTotalPages} total={activeFoundationRows.length} pageSize={dynamicPageSize} onPage={setFoundPage} />
-                )}
-              </div>
+              </>
             )}
           </div>
         </div>
@@ -615,39 +604,6 @@ export function RepositoryPage() {
   );
 }
 
-function TablePagination({ page, totalPages, total, pageSize, onPage }: {
-  page: number; totalPages: number; total: number; pageSize: number; onPage: (p: number) => void;
-}) {
-  const start = total === 0 ? 0 : (page - 1) * pageSize + 1;
-  const end = Math.min(page * pageSize, total);
-  const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
-  const visible = pages.filter(p => p === 1 || p === totalPages || Math.abs(p - page) <= 1);
-  return (
-    <div className="flex items-center justify-between py-3">
-      <span className="text-[12px] text-[#6b7280]">Showing {start}–{end} of {total}</span>
-      <div className="flex items-center gap-1">
-        <button disabled={page <= 1} onClick={() => onPage(page - 1)} className="p-1.5 hover:bg-[#F2F2F2] disabled:opacity-30 disabled:cursor-not-allowed">
-          <ChevronLeft size={14} className="text-[#6b7280]" />
-        </button>
-        {visible.map((p, i) => (
-          <span key={p} className="flex items-center gap-1">
-            {i > 0 && visible[i - 1] !== p - 1 && <span className="px-1 text-[12px] text-[#9ca3af]">…</span>}
-            <button
-              onClick={() => onPage(p)}
-              className={`px-2.5 py-1 text-[12px] transition-colors ${p === page ? 'bg-[#C5143D] text-white' : 'hover:bg-[#F2F2F2] text-[#1F1F1F]'}`}
-            >
-              {p}
-            </button>
-          </span>
-        ))}
-        <button disabled={page >= totalPages} onClick={() => onPage(page + 1)} className="p-1.5 hover:bg-[#F2F2F2] disabled:opacity-30 disabled:cursor-not-allowed">
-          <ChevronRight size={14} className="text-[#6b7280]" />
-        </button>
-      </div>
-    </div>
-  );
-}
-
 function FoundationRowActions({ item, onView, onEdit, onWithdraw, onDelete }: {
   item: FoundationItem;
   onView: (i: FoundationItem) => void;
@@ -690,7 +646,7 @@ function FoundationRowActions({ item, onView, onEdit, onWithdraw, onDelete }: {
                 <button
                   onClick={() => { onWithdraw(item); setMenuOpen(false); }}
                   className="w-full flex items-center gap-2 px-3 py-2 text-left text-[13px] text-[#6b7280] hover:bg-[#F2F2F2] transition-colors"
-                  style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}
+                  style={{ fontFamily: "'DM Sans', sans-serif" }}
                 >
                   <Ban size={13} />
                   Withdraw
@@ -699,7 +655,7 @@ function FoundationRowActions({ item, onView, onEdit, onWithdraw, onDelete }: {
               <button
                 onClick={() => { onDelete(item); setMenuOpen(false); }}
                 className="w-full flex items-center gap-2 px-3 py-2 text-left text-[13px] text-[#C5143D] hover:bg-red-50 transition-colors"
-                style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}
+                style={{ fontFamily: "'DM Sans', sans-serif" }}
               >
                 <Trash2 size={13} />
                 Delete
@@ -733,8 +689,8 @@ function FoundationFacetPanel({
   onOwnerChange: (v: string) => void;
   onClose: () => void;
 }) {
-  const types: FoundationType[] = availableTypes ?? ['DEF', 'GV', 'LOV', 'DM', 'TEC', 'SYS'];
-  const statuses: ItemStatus[] = ['DRAFT', 'PENDING_APPROVAL', 'PUBLISHED', 'ARCHIVED', 'WITHDRAWN'];
+  const types: FoundationType[] = availableTypes ?? ['DEF', 'GV', 'LOV', 'ATT', 'TEC', 'SYS'];
+  const statuses: ItemStatus[] = ['DRAFT', 'PENDING_APPROVAL', 'ACTIVE', 'ARCHIVED', 'WITHDRAWN'];
   const segments = Array.from(new Set(items.map(i => i.segment).filter(Boolean))) as string[];
   const owners = Array.from(new Set(items.map(i => i.owner)));
   const shouldShowTypeFilter = showTypeFilter ?? true;
@@ -775,7 +731,7 @@ function FoundationFacetPanel({
       )}
       {owners.length > 0 && (
         <div>
-          <p className="text-[11px] uppercase tracking-wider text-[#6b7280] mb-2">Owner</p>
+          <p className="text-[11px] uppercase tracking-wider text-[#6b7280] mb-2">Editor</p>
           <div className="flex flex-wrap gap-1.5">
             <button onClick={() => onOwnerChange('')} className={`px-2.5 py-1 text-[12px] transition-colors ${!ownerFilter ? 'bg-[#C5143D] text-white' : 'bg-[#F2F2F2] text-[#1F1F1F] hover:bg-white'}`}>All</button>
             {owners.map(o => (
@@ -795,42 +751,61 @@ function FoundationQuickPreviewPanel({ item, onClose, onView, onEdit }: {
   onView: (i: FoundationItem) => void;
   onEdit: (i: FoundationItem) => void;
 }) {
-  const renderTypeContent = () => {
-    if (item.type === 'DEF' && item.body) {
-      return (
-        <div>
-          <p className="text-[11px] uppercase tracking-wider text-[#6b7280] mb-1">Definition</p>
-          <p className="text-[13px] text-[#1F1F1F] leading-relaxed">{item.body}</p>
-        </div>
-      );
-    }
-    return null;
+  const [showAllUsedIn, setShowAllUsedIn] = useState(false);
+  const USED_IN_LIMIT = 3;
+
+  const metaFormatDate = (iso: string) => {
+    try { return new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }) + ' (UTC)'; }
+    catch { return iso; }
   };
+  const metaLifecycleColors: Record<string, string> = {
+    ACTIVE: 'bg-emerald-100 text-emerald-700 border-emerald-200',
+    DRAFT: 'bg-gray-100 text-gray-600 border-gray-200',
+    PENDING_APPROVAL: 'bg-amber-100 text-amber-700 border-amber-200',
+    ARCHIVED: 'bg-blue-100 text-blue-700 border-blue-200',
+    WITHDRAWN: 'bg-red-100 text-red-700 border-red-200',
+  };
+  const MetaSysRow = ({ label, value }: { label: string; value: React.ReactNode }) => (
+    <div className="flex items-start gap-2 py-1.5 border-b border-[#f3f4f6] last:border-0">
+      <span className="text-[11px] text-[#9ca3af] shrink-0" style={{ width: '100px' }}>{label}</span>
+      <span className="text-[12px] text-[#1F1F1F] flex-1 break-all">{value}</span>
+    </div>
+  );
+
+  const allRepoItems = useMemo(() => [...repositoryItems, ...dynamicRepositoryItems], []);
+  const usedInRefs = (item.usedIn ?? []).map(id => allRepoItems.find(r => r.id === id)).filter(Boolean) as RepositoryItem[];
+  const visibleUsedIn = showAllUsedIn ? usedInRefs : usedInRefs.slice(0, USED_IN_LIMIT);
+  const hiddenCount = usedInRefs.length - USED_IN_LIMIT;
+
+  const bodyContent = item.type === 'DEF' && item.body ? item.body : item.description;
+  const metaLcChip = metaLifecycleColors[item.status] ?? 'bg-gray-100 text-gray-600 border-gray-200';
 
   return (
     <div className="h-full w-full border-l border-[#d1d5db] bg-white overflow-y-auto">
       <div className="p-4 border-b border-[#d1d5db] flex items-center justify-between">
-        <h3 className="text-[14px] text-[#1F1F1F]">Foundation Preview</h3>
-        <button onClick={onClose} className="p-1 hover:bg-[#F2F2F2]"><X size={14} className="text-[#6b7280]" /></button>
+        <h3 className="text-[14px] text-[#1F1F1F] flex-1 min-w-0 pr-2 truncate">{item.name}</h3>
+        <button onClick={onClose} className="p-1 hover:bg-[#F2F2F2] shrink-0"><X size={14} className="text-[#6b7280]" /></button>
       </div>
       <div className="p-4 space-y-4">
         <div>
-          <h4 className="text-[15px] text-[#1F1F1F] mb-1">{item.name}</h4>
           <div className="flex items-center gap-2 mb-3">
-            <span className="px-1.5 py-0.5 text-[11px] font-mono bg-[#F2F2F2] text-[#6b7280]">{item.type}</span>
-            <span className="text-[11px] text-[#9ca3af]">{foundationTypeLabels[item.type]}</span>
-            <StatusBadge status={item.status} />
+            <span className="px-1.5 py-0.5 text-[11px] font-mono bg-[#F2F2F2] text-[#6b7280] border border-[#d1d5db]">{item.type}</span>
+            <span className={`px-2 py-0.5 text-[11px] border ${metaLcChip}`}>{statusLabels[item.status]}</span>
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-3">
-          <MetaKV label="Version" value={item.version} />
-          <MetaKV label="Owner" value={item.owner} />
-          <MetaKV label="Usages" value={String(item.usages)} />
-          <MetaKV label="Last Modified" value={item.lastModified} />
-          <MetaKV label="ID" value={item.id} />
+        {bodyContent && (
+          <p className="text-[13px] text-[#6b7280] overflow-hidden" style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}>{bodyContent}</p>
+        )}
+        <div className="py-3 border-b border-[#d1d5db]">
+          <p className="text-[10px] uppercase tracking-wider text-[#9ca3af] mb-2">System Attributes</p>
+          <div className="space-y-0">
+            <MetaSysRow label="ID" value={item.id} />
+            <MetaSysRow label="Version" value={item.version} />
+            <MetaSysRow label="Last Updated" value={metaFormatDate(item.lastModified)} />
+            <MetaSysRow label="Editor" value={item.owner} />
+          </div>
         </div>
-        {renderTypeContent()}
-        <div className="flex gap-2 pt-2">
+        <div className="flex gap-2">
           <button
             onClick={() => onView(item)}
             className="flex-1 flex items-center justify-center gap-1.5 bg-[#F2F2F2] text-[#1F1F1F] px-3 py-2 text-[14px] hover:bg-white transition-all duration-200"
@@ -846,6 +821,35 @@ function FoundationQuickPreviewPanel({ item, onClose, onView, onEdit }: {
             <Edit3 size={14} /> Edit
           </button>
         </div>
+        {usedInRefs.length > 0 && (
+          <div className="border-t border-[#d1d5db] pt-3">
+            <p className="text-[10px] uppercase tracking-wider text-[#9ca3af] mb-2">Used In</p>
+            <div className="space-y-0">
+              {visibleUsedIn.map((ref) => (
+                <div key={ref.id} className="flex items-start gap-2 py-1.5 border-b border-[#f3f4f6] last:border-0">
+                  <span className="text-[11px] text-[#9ca3af] shrink-0" style={{ width: '100px' }}>{ref.type}</span>
+                  <a
+                    href={`/canvas/${ref.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[12px] text-[#2563eb] flex-1 break-all hover:underline"
+                    style={{ textDecoration: 'none' }}
+                  >
+                    {ref.name}
+                  </a>
+                </div>
+              ))}
+            </div>
+            {usedInRefs.length > USED_IN_LIMIT && (
+              <button
+                onClick={() => setShowAllUsedIn(v => !v)}
+                className="mt-2 text-[11px] text-[#6b7280] hover:text-[#1F1F1F] transition-colors"
+              >
+                {showAllUsedIn ? 'Show less' : `Show ${hiddenCount} more`}
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -855,7 +859,7 @@ const FOUNDATION_TYPE_OPTIONS: { value: FoundationType; label: string; descripti
   { value: 'DEF', label: 'Definition', description: 'A term or concept definition used across contracts' },
   { value: 'GV', label: 'Governing Variable', description: 'A variable that drives conditional logic' },
   { value: 'LOV', label: 'List of Values', description: 'An enumerated set of allowed values' },
-  { value: 'DM', label: 'Descriptive Metadata', description: 'Structured descriptive attributes for objects' },
+  { value: 'ATT', label: 'Attribute', description: 'Structured descriptive attributes for objects' },
   { value: 'TEC', label: 'Technical Guidance', description: 'System-level or drafting technical notes' },
   { value: 'SYS', label: 'System Guidance', description: 'Operational or process-level guidance' },
 ];
@@ -932,7 +936,7 @@ function CreateFoundationDialog({ onClose, onCreate, allowedTypes }: {
                   setStep(1);
                 }}
                 className={inputStyle}
-                style={{ borderRadius: '0px', fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: '14px' }}
+                style={{ borderRadius: '0px', fontFamily: "'DM Sans', sans-serif", fontSize: '14px' }}
               >
                 <option value="">Select a foundation type...</option>
                 {selectableOptions.map(opt => (
@@ -955,7 +959,7 @@ function CreateFoundationDialog({ onClose, onCreate, allowedTypes }: {
                   setUploadedFile(null);
                 }}
                 className={inputStyle}
-                style={{ borderRadius: '0px', fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: '14px' }}
+                style={{ borderRadius: '0px', fontFamily: "'DM Sans', sans-serif", fontSize: '14px' }}
               >
                 <option value="">Select a format...</option>
                 <option value="digital">Digital</option>
@@ -1152,7 +1156,7 @@ function RowActions({ item, onView, onEdit, onWithdraw, onDelete }: { item: Repo
                 <button
                   onClick={() => { onWithdraw(item); setMenuOpen(false); }}
                   className="w-full flex items-center gap-2 px-3 py-2 text-left text-[13px] text-[#6b7280] hover:bg-[#F2F2F2] transition-colors"
-                  style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}
+                  style={{ fontFamily: "'DM Sans', sans-serif" }}
                 >
                   <Ban size={13} />
                   Withdraw
@@ -1161,7 +1165,7 @@ function RowActions({ item, onView, onEdit, onWithdraw, onDelete }: { item: Repo
               <button
                 onClick={() => { onDelete(item); setMenuOpen(false); }}
                 className="w-full flex items-center gap-2 px-3 py-2 text-left text-[13px] text-[#C5143D] hover:bg-red-50 transition-colors"
-                style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}
+                style={{ fontFamily: "'DM Sans', sans-serif" }}
               >
                 <Trash2 size={13} />
                 Delete
@@ -1243,7 +1247,7 @@ function QuickPreviewPanel({ item, onClose, onViewCanvas, onEdit }: {
     catch { return iso; }
   };
   const metaLifecycleColors: Record<string, string> = {
-    PUBLISHED: 'bg-emerald-100 text-emerald-700 border-emerald-200',
+    ACTIVE: 'bg-emerald-100 text-emerald-700 border-emerald-200',
     DRAFT: 'bg-gray-100 text-gray-600 border-gray-200',
     PENDING_APPROVAL: 'bg-amber-100 text-amber-700 border-amber-200',
     ARCHIVED: 'bg-blue-100 text-blue-700 border-blue-200',
@@ -1252,8 +1256,8 @@ function QuickPreviewPanel({ item, onClose, onViewCanvas, onEdit }: {
   const metaLcChip = metaLifecycleColors[item.status] ?? 'bg-gray-100 text-gray-600 border-gray-200';
   const MetaSysRow = ({ label, value }: { label: string; value: React.ReactNode }) => (
     <div className="flex items-start gap-2 py-1.5 border-b border-[#f3f4f6] last:border-0">
-      <span className="text-[11px] text-[#9ca3af] shrink-0" style={{ width: '100px', fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial" }}>{label}</span>
-      <span className="text-[12px] text-[#1F1F1F] flex-1 break-all" style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial" }}>{value}</span>
+      <span className="text-[11px] text-[#9ca3af] shrink-0" style={{ width: '100px', fontFamily: "'DM Sans', sans-serif" }}>{label}</span>
+      <span className="text-[12px] text-[#1F1F1F] flex-1 break-all" style={{ fontFamily: "'DM Sans', sans-serif" }}>{value}</span>
     </div>
   );
 
@@ -1368,30 +1372,11 @@ function QuickPreviewPanel({ item, onClose, onViewCanvas, onEdit }: {
   return (
     <div className="h-full w-full border-l border-[#d1d5db] bg-white overflow-y-auto">
       <div className="p-4 border-b border-[#d1d5db] flex items-center justify-between">
-        <h3 className="text-[14px] text-[#1F1F1F]">Quick Preview</h3>
-        <button onClick={onClose} className="p-1 hover:bg-[#F2F2F2]"><X size={14} className="text-[#6b7280]" /></button>
+        <h3 className="text-[14px] text-[#1F1F1F] flex-1 min-w-0 pr-2 truncate">{item.name}</h3>
+        <button onClick={onClose} className="p-1 hover:bg-[#F2F2F2] shrink-0"><X size={14} className="text-[#6b7280]" /></button>
       </div>
       <div className="p-4 space-y-4">
         <div>
-          <h4 className="text-[15px] text-[#1F1F1F] mb-1">{item.name}</h4>
-
-          {/* Breadcrumb / Context Path */}
-          {breadcrumb.length > 0 && (
-            <div className="flex items-center gap-1 mb-2 flex-wrap">
-              {breadcrumb.map((crumb, i) => (
-                <span key={i} className="flex items-center gap-1">
-                  <span className="text-[11px] text-[#9ca3af]">{crumb.type}</span>
-                  <span className="text-[11px] text-[#6b7280]">{crumb.name}</span>
-                  {i < breadcrumb.length - 1 && (
-                    <ChevronRight size={10} className="text-[#d1d5db]" />
-                  )}
-                </span>
-              ))}
-              <ChevronRight size={10} className="text-[#d1d5db]" />
-              <span className="text-[11px] text-[#1F1F1F]">{item.type}</span>
-            </div>
-          )}
-
           <div className="flex items-center gap-2 mb-3">
             <TypeBadge type={item.type} />
             <StatusBadge status={item.status} />
@@ -1428,13 +1413,13 @@ function QuickPreviewPanel({ item, onClose, onViewCanvas, onEdit }: {
                 const refItem = repositoryItems.find(r => r.id === ref);
                 return (
                   <div key={ref} className="flex items-start gap-2 py-1.5 border-b border-[#f3f4f6] last:border-0">
-                    <span className="text-[11px] text-[#9ca3af] shrink-0" style={{ width: '100px', fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial" }}>{refItem?.type || ''}</span>
+                    <span className="text-[11px] text-[#9ca3af] shrink-0" style={{ width: '100px', fontFamily: "'DM Sans', sans-serif" }}>{refItem?.type || ''}</span>
                     <a
                       href={`/canvas/${ref}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-[12px] text-[#2563eb] flex-1 break-all hover:underline"
-                      style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial", textDecoration: 'none' }}
+                      style={{ fontFamily: "'DM Sans', sans-serif", textDecoration: 'none' }}
                     >
                       {refItem?.name || ref}
                     </a>
@@ -1648,7 +1633,7 @@ function CreateComponentDialog({ onClose, onCreate }: {
                   setUploadedFile(null);
                 }}
                 className={inputStyle}
-                style={{ borderRadius: '0px', fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: '14px' }}
+                style={{ borderRadius: '0px', fontFamily: "'DM Sans', sans-serif", fontSize: '14px' }}
               >
                 <option value="">Select an object type...</option>
                 {OBJECT_TYPE_OPTIONS.map(opt => (
@@ -1671,7 +1656,7 @@ function CreateComponentDialog({ onClose, onCreate }: {
                   setUploadedFile(null);
                 }}
                 className={inputStyle}
-                style={{ borderRadius: '0px', fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: '14px' }}
+                style={{ borderRadius: '0px', fontFamily: "'DM Sans', sans-serif", fontSize: '14px' }}
               >
                 <option value="">Select a format...</option>
                 <option value="digital">Digital</option>
@@ -1735,7 +1720,7 @@ function CreateComponentDialog({ onClose, onCreate }: {
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="e.g. Deductible Clause (Marine Hull)"
                   className={inputStyle}
-                  style={{ borderRadius: '0px', fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: '14px' }}
+                  style={{ borderRadius: '0px', fontFamily: "'DM Sans', sans-serif", fontSize: '14px' }}
                   autoFocus
                 />
               </div>
@@ -1754,7 +1739,7 @@ function CreateComponentDialog({ onClose, onCreate }: {
                     setShowRiskCodeDropdown(o => !o);
                   }}
                   className={`${inputStyle} text-left flex items-center justify-between cursor-pointer`}
-                  style={{ borderRadius: '0px', fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: '14px' }}
+                  style={{ borderRadius: '0px', fontFamily: "'DM Sans', sans-serif", fontSize: '14px' }}
                 >
                   <span className={selectedRiskCodes.length > 0 ? 'text-[#1F1F1F]' : 'text-[#9ca3af]'}>
                     {selectedRiskCodes.length > 0
@@ -1805,7 +1790,7 @@ function CreateComponentDialog({ onClose, onCreate }: {
                   value={cob}
                   onChange={(e) => setCob(e.target.value)}
                   className={inputStyle}
-                  style={{ borderRadius: '0px', fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: '14px' }}
+                  style={{ borderRadius: '0px', fontFamily: "'DM Sans', sans-serif", fontSize: '14px' }}
                 >
                   <option value="">Select class of business...</option>
                   {cobOptions.map(c => (
@@ -1830,7 +1815,7 @@ function CreateComponentDialog({ onClose, onCreate }: {
                     setShowJurisdictionDropdown(o => !o);
                   }}
                   className={`${inputStyle} text-left flex items-center justify-between cursor-pointer`}
-                  style={{ borderRadius: '0px', fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: '14px' }}
+                  style={{ borderRadius: '0px', fontFamily: "'DM Sans', sans-serif", fontSize: '14px' }}
                 >
                   <span className={selectedJurisdictions.length > 0 ? 'text-[#1F1F1F]' : 'text-[#9ca3af]'}>
                     {selectedJurisdictions.length > 0
@@ -1880,7 +1865,7 @@ function CreateComponentDialog({ onClose, onCreate }: {
                   placeholder="Optional notes for publication…"
                   rows={3}
                   className={inputStyle}
-                  style={{ borderRadius: '0px', fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: '14px', resize: 'vertical' }}
+                  style={{ borderRadius: '0px', fontFamily: "'DM Sans', sans-serif", fontSize: '14px', resize: 'vertical' }}
                 />
               </div>
             </div>

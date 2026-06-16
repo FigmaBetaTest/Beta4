@@ -10,7 +10,7 @@ const typeColors: Record<ItemType, string> = {
 const statusColors: Record<ItemStatus, string> = {
   'DRAFT': 'text-gray-600',
   'PENDING_APPROVAL': 'text-amber-700',
-  'PUBLISHED': 'text-emerald-700',
+  'ACTIVE': 'text-emerald-700',
   'ARCHIVED': 'text-blue-600',
   'WITHDRAWN': 'text-red-700',
 };
@@ -18,15 +18,21 @@ const statusColors: Record<ItemStatus, string> = {
 const statusDotColors: Record<ItemStatus, string> = {
   'DRAFT': 'bg-gray-500',
   'PENDING_APPROVAL': 'bg-amber-500',
-  'PUBLISHED': 'bg-emerald-500',
+  'ACTIVE': 'bg-emerald-500',
   'ARCHIVED': 'bg-blue-500',
   'WITHDRAWN': 'bg-red-500',
 };
 
+const typeLabels: Record<ItemType, string> = {
+  'Contract': 'CNT',
+  'Component-Group': 'CPG',
+  'Component': 'CMP',
+};
+
 export function TypeBadge({ type }: { type: ItemType }) {
   return (
-    <span className={`inline-flex items-center px-2 py-0.5 text-[11px] border ${typeColors[type]}`}>
-      {type}
+    <span className={`inline-flex items-center px-2 py-0.5 text-[11px] font-mono border ${typeColors[type]}`}>
+      {typeLabels[type]}
     </span>
   );
 }

@@ -1465,7 +1465,7 @@ function ConditionsPanel({ sections, selectedBlockId, onSelectBlock, conditionRu
     catch { return iso; }
   };
   const metaLifecycleColors: Record<string, string> = {
-    PUBLISHED: 'bg-emerald-100 text-emerald-700 border-emerald-200',
+    ACTIVE: 'bg-emerald-100 text-emerald-700 border-emerald-200',
     DRAFT: 'bg-gray-100 text-gray-600 border-gray-200',
     PENDING_APPROVAL: 'bg-amber-100 text-amber-700 border-amber-200',
     ARCHIVED: 'bg-blue-100 text-blue-700 border-blue-200',
@@ -1474,8 +1474,8 @@ function ConditionsPanel({ sections, selectedBlockId, onSelectBlock, conditionRu
   const metaLcChip = metaLifecycleColors[contract.status] ?? 'bg-gray-100 text-gray-600 border-gray-200';
   const MetaSysRow = ({ label, value }: { label: string; value: React.ReactNode }) => (
     <div className="flex items-start gap-2 py-1.5 border-b border-[#f3f4f6] last:border-0">
-      <span className="text-[11px] text-[#9ca3af] shrink-0" style={{ width: '100px', fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial" }}>{label}</span>
-      <span className="text-[12px] text-[#1F1F1F] flex-1 break-all" style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial" }}>{value}</span>
+      <span className="text-[11px] text-[#9ca3af] shrink-0" style={{ width: '100px', fontFamily: "'DM Sans', sans-serif" }}>{label}</span>
+      <span className="text-[12px] text-[#1F1F1F] flex-1 break-all" style={{ fontFamily: "'DM Sans', sans-serif" }}>{value}</span>
     </div>
   );
 
@@ -1681,13 +1681,13 @@ function ConditionsPanel({ sections, selectedBlockId, onSelectBlock, conditionRu
               <div className="space-y-0">
                 {usedInItems.map((refItem) => (
                   <div key={refItem!.id} className="flex items-start gap-2 py-1.5 border-b border-[#f3f4f6] last:border-0">
-                    <span className="text-[11px] text-[#9ca3af] shrink-0" style={{ width: '100px', fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial" }}>{refItem!.type}</span>
+                    <span className="text-[11px] text-[#9ca3af] shrink-0" style={{ width: '100px', fontFamily: "'DM Sans', sans-serif" }}>{refItem!.type}</span>
                     <a
                       href={`/canvas/${refItem!.id}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-[12px] text-[#2563eb] flex-1 break-all hover:underline"
-                      style={{ fontFamily: "'Neue Helvetica', 'Helvetica Neue', Helvetica, Arial", textDecoration: 'none' }}
+                      style={{ fontFamily: "'DM Sans', sans-serif", textDecoration: 'none' }}
                     >
                       {refItem!.name}
                     </a>
