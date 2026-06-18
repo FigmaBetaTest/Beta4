@@ -1,3 +1,5 @@
+import { useState, useRef, useEffect } from 'react';
+import { ChevronDown } from 'lucide-react';
 import type { ItemType, ItemStatus } from './mock-data';
 import { statusLabels } from './mock-data';
 
@@ -44,6 +46,67 @@ export function StatusBadge({ status, version }: { status: ItemStatus; version?:
       {statusLabels[status]}
       {version && <span className="text-[#6b7280]">• v{version}</span>}
     </span>
+  );
+}
+
+const MOCK_VERSIONS = [
+  { version: '0.1.0', date: '2026-06-18', status: 'Current' },
+  { version: '0.0.3', date: '2026-05-14', status: 'Archived' },
+  { version: '0.0.2', date: '2026-04-02', status: 'Archived' },
+  { version: '0.0.1', date: '2026-02-11', status: 'Archived' },
+];
+
+export function VersionDropdown({ version }: { version: string }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [open]);
+
+  return (
+    <div ref={ref} style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[11px] text-[#6b7280] hover:bg-[#F2F2F2] transition-colors"
+        style={{ border: 'none', background: 'none', cursor: 'pointer' }}
+      >
+        v{version}
+        <ChevronDown size={10} />
+      </button>
+      {open && (
+        <div
+          style={{
+            position: 'absolute', top: 'calc(100% + 4px)', left: 0, zIndex: 50,
+            background: '#fff', border: '1px solid #d1d5db', minWidth: 140,
+            boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+          }}
+        >
+          {MOCK_VERSIONS.map(v => (
+            <div
+              key={v.version}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '6px 12px', borderBottom: '1px solid #f9fafb',
+                cursor: 'pointer',
+              }}
+              className="hover:bg-[#F2F2F2]"
+            >
+              {v.version === version
+                ? <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#15803d', flexShrink: 0, display: 'inline-block' }} />
+                : <span style={{ width: 6, height: 6, flexShrink: 0, display: 'inline-block' }} />
+              }
+              <span style={{ fontFamily: "'DM Mono', Consolas, monospace", fontSize: 12, color: '#1F1F1F' }}>v{v.version}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 

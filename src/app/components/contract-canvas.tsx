@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback, useMemo, type ReactNode } fro
 import { useParams, useNavigate } from 'react-router';
 import { ChevronRight, ChevronDown, Edit3, ArrowLeft, FileText, Plus, X, Search, Layers, Package, GripVertical, Trash2, Save, SendHorizonal, Settings2, ToggleLeft, ToggleRight, Zap, Variable, Trash, AlertTriangle, Code, Info, Send } from 'lucide-react';
 import { contractSections, componentGroupSections, componentSections, repositoryItems, dynamicRepositoryItems, dataElements, sectionsByItemId, paragraphsByItemId, getSubComponentsForItem, type ContractSection, type DataElement } from './mock-data';
-import { VariationBadges, OptionalBadge, TypeBadge, StatusBadge } from './type-badge';
+import { VariationBadges, OptionalBadge, TypeBadge, StatusBadge, VersionDropdown } from './type-badge';
 import { MetaKV } from './meta-kv';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -435,7 +435,8 @@ export function ContractCanvas() {
           </button>
           <div className="flex items-center gap-2">
             <h2 className="text-[15px] text-[#1F1F1F]" style={{ fontFamily: 'var(--font-family)' }}>{contract.name}</h2>
-            <StatusBadge status={contract.status} version={contract.version} />
+            <StatusBadge status={contract.status} />
+            {contract.version && <VersionDropdown version={contract.version} />}
           </div>
         </div>
         <div className="flex items-center gap-2">

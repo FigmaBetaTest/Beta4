@@ -636,31 +636,6 @@ export function FoundationEditor() {
               </div>
             )}
           </div>
-
-          {/* Actions */}
-          {!isViewMode && (
-          <div className="flex items-center justify-between mt-8">
-            <button
-              onClick={() => navigate(`/?tab=${targetTab}`)}
-              className="px-[40px] py-[8px] text-[14px] bg-[#F2F2F2] text-[#1F1F1F] hover:bg-white transition-all duration-200 cursor-pointer"
-              style={{ borderRadius: '0px', fontFamily: 'var(--font-family)' }}
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleCreate}
-              disabled={!title.trim() || (itemType === 'GV' && (!gvQuestion.trim() || !gvType || !gvTypespecifica)) || (itemType === 'ATT' && (!dmType || dmApplicability.length === 0 || !dmDescription.trim()))}
-              className={`px-[40px] py-[8px] text-[14px] flex items-center gap-1.5 transition-all duration-200 ${
-                (title.trim() && (itemType !== 'GV' || (gvQuestion.trim() && gvType && gvTypespecifica)) && (itemType !== 'ATT' || (dmType && dmApplicability.length > 0 && dmDescription.trim())))
-                  ? 'bg-[#C5143D] text-white hover:bg-[#F2F2F2] hover:text-[#C5143D] cursor-pointer'
-                  : 'bg-[#F2F2F2] text-[#9ca3af] cursor-not-allowed'
-              }`}
-              style={{ borderRadius: '0px', fontFamily: 'var(--font-family)' }}
-            >
-              <Plus size={13} /> {isNew ? `Create ${typeLabel}` : `Save ${typeLabel}`}
-            </button>
-          </div>
-          )}
         </div>
       </div>
     </div>

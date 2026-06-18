@@ -23,6 +23,8 @@ export function RepositoryPage() {
   const [typeFilter, setTypeFilter] = useState<ItemType | ''>('');
   const [statusFilter, setStatusFilter] = useState<ItemStatus | ''>('');
   const [cobFilter, setCobFilter] = useState('');
+  const [activeOptionalFilters, setActiveOptionalFilters] = useState<string[]>([]);
+  const [optionalFilterValues, setOptionalFilterValues] = useState<Record<string, string>>({});
   const [sortKey, setSortKey] = useState<SortKey | null>(null);
   const [sortDir, setSortDir] = useState<SortDir>('asc');
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -215,7 +217,7 @@ export function RepositoryPage() {
         {/* Page Header */}
         <div className="p-6 pb-6 flex-1 min-h-0 flex flex-col">
           <div className="flex items-center justify-between mb-1">
-            <h1 className="text-[22px] text-[#1F1F1F] leading-[90%]">Wording Objects Library v0.5</h1>
+            <h1 className="text-[22px] text-[#1F1F1F] leading-[90%]">Wording Objects Library</h1>
           </div>
           <p className="text-[13px] text-[#6b7280] mb-0">
             Manage your modular wording objects
@@ -251,33 +253,37 @@ export function RepositoryPage() {
 
           {/* Objects Search & Filter Bar */}
           {activeTab === 'objects' && (
-            <>
+            <div style={{ position: 'relative' }}>
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-[300px] max-w-full flex items-center gap-2 bg-white border border-[#d1d5db] px-3 py-2" style={{ borderRadius: '0px' }}>
+                <div className="group flex items-center gap-2 bg-white border border-[#d1d5db] px-3 py-2 focus-within:border-[#C5143D] focus-within:ring-1 focus-within:ring-[#C5143D]" style={{ borderRadius: '0px', width: 300 }}>
                   <Search size={15} className="text-[#6b7280]" />
                   <input
                     type="text"
-                    placeholder="Search for names or objects"
+                    placeholder="Search for objects or content"
                     className="flex-1 bg-transparent text-[14px] text-[#1F1F1F] placeholder:text-[#9ca3af] outline-none border-none"
                     style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '14px' }}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
-                  {searchQuery && (
-                    <button onClick={() => setSearchQuery('')}><X size={14} className="text-[#6b7280]" /></button>
-                  )}
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className={`transition-opacity ${searchQuery ? 'opacity-100' : 'opacity-0 group-focus-within:opacity-100'}`}
+                    tabIndex={-1}
+                  >
+                    <X size={14} className="text-[#6b7280]" />
+                  </button>
                 </div>
-                <div className="ml-auto flex items-center gap-3">
                 <button
                   onClick={() => setShowFacets(!showFacets)}
-                  className={`flex items-center gap-1.5 px-[40px] py-[8px] text-[14px] transition-all duration-200 cursor-pointer ${
+                  className={`flex items-center gap-1.5 px-[20px] py-[8px] text-[14px] transition-all duration-200 cursor-pointer ${
                     showFacets ? 'bg-[#C5143D] text-white' : 'bg-[#F2F2F2] text-[#1F1F1F] hover:bg-white'
                   }`}
-                  style={{ borderRadius: '0px', border: showFacets ? '0px solid #C5143D' : '0px solid #F2F2F2' }}
+                  style={{ borderRadius: '0px' }}
                 >
                   <Filter size={14} />
                   Filters
                 </button>
+                <div className="ml-auto flex items-center gap-3">
                 <button
                   className="bg-[#C5143D] text-white px-[40px] py-[8px] text-[14px] flex items-center gap-1.5 hover:bg-[#F2F2F2] hover:text-[#C5143D] transition-all duration-200 cursor-pointer"
                   style={{ borderRadius: '0px', border: '0px solid #C5143D' }}
@@ -299,16 +305,24 @@ export function RepositoryPage() {
                   onStatusChange={setStatusFilter}
                   onCobChange={setCobFilter}
                   onClose={() => setShowFacets(false)}
+                  activeOptionalFilters={activeOptionalFilters}
+                  optionalFilterValues={optionalFilterValues}
+                  onOptionalFilterChange={(attr, val) => setOptionalFilterValues(prev => ({ ...prev, [attr]: val }))}
+                  onRemoveOptionalFilter={attr => {
+                    setActiveOptionalFilters(prev => prev.filter(a => a !== attr));
+                    setOptionalFilterValues(prev => { const n = { ...prev }; delete n[attr]; return n; });
+                  }}
+                  onAddOptionalFilter={attr => setActiveOptionalFilters(prev => [...prev, attr])}
                 />
               )}
-            </>
+            </div>
           )}
 
           {/* Foundations Search & Filter Bar */}
           {isFoundationTab && (
             <>
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-[300px] max-w-full flex items-center gap-2 bg-white border border-[#d1d5db] px-3 py-2" style={{ borderRadius: '0px' }}>
+                <div className="group flex items-center gap-2 bg-white border border-[#d1d5db] px-3 py-2 focus-within:border-[#C5143D] focus-within:ring-1 focus-within:ring-[#C5143D]" style={{ borderRadius: '0px', width: 300 }}>
                   <Search size={15} className="text-[#6b7280]" />
                   <input
                     type="text"
@@ -318,14 +332,17 @@ export function RepositoryPage() {
                     value={foundSearch}
                     onChange={(e) => setFoundSearch(e.target.value)}
                   />
-                  {foundSearch && (
-                    <button onClick={() => setFoundSearch('')}><X size={14} className="text-[#6b7280]" /></button>
-                  )}
+                  <button
+                    onClick={() => setFoundSearch('')}
+                    className={`transition-opacity ${foundSearch ? 'opacity-100' : 'opacity-0 group-focus-within:opacity-100'}`}
+                    tabIndex={-1}
+                  >
+                    <X size={14} className="text-[#6b7280]" />
+                  </button>
                 </div>
-                <div className="ml-auto flex items-center gap-3">
                 <button
                   onClick={() => setShowFoundFacets(!showFoundFacets)}
-                  className={`flex items-center gap-1.5 px-[40px] py-[8px] text-[14px] transition-all duration-200 cursor-pointer ${
+                  className={`flex items-center gap-1.5 px-[20px] py-[8px] text-[14px] transition-all duration-200 cursor-pointer ${
                     showFoundFacets ? 'bg-[#C5143D] text-white' : 'bg-[#F2F2F2] text-[#1F1F1F] hover:bg-white'
                   }`}
                   style={{ borderRadius: '0px' }}
@@ -333,6 +350,7 @@ export function RepositoryPage() {
                   <Filter size={14} />
                   Filters
                 </button>
+                <div className="ml-auto flex items-center gap-3">
                 <button
                   className="bg-[#C5143D] text-white px-[40px] py-[8px] text-[14px] flex items-center gap-1.5 hover:bg-[#F2F2F2] hover:text-[#C5143D] transition-all duration-200 cursor-pointer"
                   style={{ borderRadius: '0px' }}
@@ -793,9 +811,6 @@ function FoundationQuickPreviewPanel({ item, onClose, onView, onEdit }: {
             <span className={`px-2 py-0.5 text-[11px] border ${metaLcChip}`}>{statusLabels[item.status]}</span>
           </div>
         </div>
-        {bodyContent && (
-          <p className="text-[13px] text-[#6b7280] overflow-hidden" style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}>{bodyContent}</p>
-        )}
         <div className="py-3 border-b border-[#d1d5db]">
           <p className="text-[10px] uppercase tracking-wider text-[#9ca3af] mb-2">System Attributes</p>
           <div className="space-y-0">
@@ -1178,50 +1193,148 @@ function RowActions({ item, onView, onEdit, onWithdraw, onDelete }: { item: Repo
   );
 }
 
+const OPTIONAL_FILTER_OPTIONS: Record<string, string[]> = {
+  'Class of Business': ['All', 'Marine', 'Aviation', 'Non-Marine', 'General'],
+  'Jurisdiction': ['All', 'UK', 'US', 'EU', 'Other'],
+  'Country': ['All', 'United Kingdom', 'United States', 'Germany', 'France'],
+  'Contract Family': ['All', 'Marine Hull', 'Marine Cargo', 'Property', 'Casualty'],
+  'Component Family': ['All', 'Asbestos', 'Biological', '(Bio)Chemical Materials', 'Communicable Diseases', 'Cyber', 'Data', 'Electromagnetic Weapons', 'Microorganism', 'Radioactive Contamination', 'Sanctions', 'Strike, Riot, Civil Commotion', 'Terrorism', 'Territorial', 'War and/or Civil War', 'Nuclear', 'Service of suit'],
+};
+
 function FacetPanel({
   typeFilter, statusFilter, cobFilter,
   onTypeChange, onStatusChange, onCobChange, onClose,
+  activeOptionalFilters, optionalFilterValues, onOptionalFilterChange, onRemoveOptionalFilter, onAddOptionalFilter,
 }: {
   typeFilter: string; statusFilter: string; cobFilter: string;
   onTypeChange: (v: ItemType | '') => void;
   onStatusChange: (v: ItemStatus | '') => void;
   onCobChange: (v: string) => void;
   onClose: () => void;
+  activeOptionalFilters: string[];
+  optionalFilterValues: Record<string, string>;
+  onOptionalFilterChange: (attr: string, val: string) => void;
+  onRemoveOptionalFilter: (attr: string) => void;
+  onAddOptionalFilter: (attr: string) => void;
 }) {
   const types: ItemType[] = ['Contract', 'Component-Group', 'Component'];
-  const statuses: ItemStatus[] = ['DRAFT', 'PENDING_APPROVAL', 'PUBLISHED', 'ARCHIVED', 'WITHDRAWN'];
-  const cobs = ['Marine Hull', 'Marine Cargo', 'Aviation', 'Property', 'Casualty', 'Energy', 'Political Risk'];
+  const statuses: ItemStatus[] = ['DRAFT', 'PENDING_APPROVAL', 'ACTIVE', 'ARCHIVED', 'WITHDRAWN'];
+  const [showAddMenu, setShowAddMenu] = useState(false);
+  const addMenuRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!showAddMenu) return;
+    const handler = (e: MouseEvent) => {
+      if (addMenuRef.current && !addMenuRef.current.contains(e.target as Node)) setShowAddMenu(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [showAddMenu]);
 
   return (
-    <div className="mt-2 p-4 bg-white border border-[#d1d5db] flex items-start gap-8">
-      <div>
-        <p className="text-[11px] uppercase tracking-wider text-[#6b7280] mb-2">Object Type</p>
-        <div className="flex flex-wrap gap-1.5">
-          <button onClick={() => onTypeChange('')} className={`px-2.5 py-1 text-[12px] transition-colors ${!typeFilter ? 'bg-[#C5143D] text-white' : 'bg-[#F2F2F2] text-[#1F1F1F] hover:bg-white'}`}>All</button>
-          {types.map((t) => (
-            <button key={t} onClick={() => onTypeChange(t)} className={`px-2.5 py-1 text-[12px] transition-colors ${typeFilter === t ? 'bg-[#C5143D] text-white' : 'bg-[#F2F2F2] text-[#1F1F1F] hover:bg-white'}`}>{t}</button>
-          ))}
-        </div>
+    <div
+      style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50, boxShadow: '0 8px 24px rgba(0,0,0,0.10)' }}
+      className="p-4 bg-white border border-[#d1d5db]"
+    >
+      {/* Top-right controls: always pinned */}
+      <div ref={addMenuRef} style={{ position: 'absolute', top: 12, right: 12, display: 'flex', alignItems: 'center', gap: 4, zIndex: 1 }}>
+        <button
+          onClick={() => setShowAddMenu(o => !o)}
+          className="flex items-center gap-1 px-2.5 py-1 text-[12px] text-[#6b7280] hover:text-[#1F1F1F] transition-colors cursor-pointer"
+          style={{ border: 'none' }}
+          title="Add filter attribute"
+        >
+          <Plus size={12} /> Add filter
+        </button>
+        {showAddMenu && (
+          <div style={{
+            position: 'absolute', top: 'calc(100% + 4px)', right: 0, zIndex: 60,
+            background: '#fff', border: '1px solid #d1d5db', minWidth: 220,
+            boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+          }}>
+            {[
+              'Class of Business',
+              'Jurisdiction',
+              'Country',
+              'Contract Family',
+              'Component Family',
+            ].map(attr => {
+              const active = activeOptionalFilters.includes(attr);
+              return (
+                <button
+                  key={attr}
+                  onClick={() => {
+                    if (active) { onRemoveOptionalFilter(attr); } else { onAddOptionalFilter(attr); }
+                    setShowAddMenu(false);
+                  }}
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    width: '100%', padding: '8px 12px', background: 'transparent',
+                    border: 'none', cursor: 'pointer', fontSize: 13, color: '#1F1F1F',
+                    fontFamily: 'var(--font-family)', borderBottom: '1px solid #f3f4f6',
+                    textAlign: 'left',
+                  }}
+                  className="hover:bg-[#F2F2F2]"
+                >
+                  {attr}
+                  {active && <Check size={12} className="text-[#C5143D]" />}
+                </button>
+              );
+            })}
+          </div>
+        )}
+        <button onClick={onClose} className="p-1 hover:bg-[#F2F2F2]"><X size={14} className="text-[#6b7280]" /></button>
       </div>
-      <div>
-        <p className="text-[11px] uppercase tracking-wider text-[#6b7280] mb-2">Status</p>
-        <div className="flex flex-wrap gap-1.5">
-          <button onClick={() => onStatusChange('')} className={`px-2.5 py-1 text-[12px] transition-colors ${!statusFilter ? 'bg-[#C5143D] text-white' : 'bg-[#F2F2F2] text-[#1F1F1F] hover:bg-white'}`}>All</button>
-          {statuses.map((s) => (
-            <button key={s} onClick={() => onStatusChange(s)} className={`px-2.5 py-1 text-[12px] transition-colors ${statusFilter === s ? 'bg-[#C5143D] text-white' : 'bg-[#F2F2F2] text-[#1F1F1F] hover:bg-white'}`}>{statusLabels[s]}</button>
-          ))}
+
+      {/* Filter groups */}
+      <div className="flex flex-wrap items-start gap-8 pr-32">
+        <div>
+          <p className="text-[11px] uppercase tracking-wider text-[#6b7280] mb-2">Object Type</p>
+          <div className="flex flex-wrap gap-1.5">
+            <button onClick={() => onTypeChange('')} className={`px-2.5 py-1 text-[12px] transition-colors ${!typeFilter ? 'bg-[#C5143D] text-white' : 'bg-[#F2F2F2] text-[#1F1F1F] hover:bg-white'}`}>All</button>
+            {types.map((t) => (
+              <button key={t} onClick={() => onTypeChange(t)} className={`px-2.5 py-1 text-[12px] transition-colors ${typeFilter === t ? 'bg-[#C5143D] text-white' : 'bg-[#F2F2F2] text-[#1F1F1F] hover:bg-white'}`}>{t}</button>
+            ))}
+          </div>
         </div>
-      </div>
-      <div>
-        <p className="text-[11px] uppercase tracking-wider text-[#6b7280] mb-2">Class of Business</p>
-        <div className="flex flex-wrap gap-1.5">
-          <button onClick={() => onCobChange('')} className={`px-2.5 py-1 text-[12px] transition-colors ${!cobFilter ? 'bg-[#C5143D] text-white' : 'bg-[#F2F2F2] text-[#1F1F1F] hover:bg-white'}`}>All</button>
-          {cobs.map((c) => (
-            <button key={c} onClick={() => onCobChange(c)} className={`px-2.5 py-1 text-[12px] transition-colors ${cobFilter === c ? 'bg-[#C5143D] text-white' : 'bg-[#F2F2F2] text-[#1F1F1F] hover:bg-white'}`}>{c}</button>
-          ))}
+        <div>
+          <p className="text-[11px] uppercase tracking-wider text-[#6b7280] mb-2">Status</p>
+          <div className="flex flex-wrap gap-1.5">
+            <button onClick={() => onStatusChange('')} className={`px-2.5 py-1 text-[12px] transition-colors ${!statusFilter ? 'bg-[#C5143D] text-white' : 'bg-[#F2F2F2] text-[#1F1F1F] hover:bg-white'}`}>All</button>
+            {statuses.map((s) => (
+              <button key={s} onClick={() => onStatusChange(s)} className={`px-2.5 py-1 text-[12px] transition-colors ${statusFilter === s ? 'bg-[#C5143D] text-white' : 'bg-[#F2F2F2] text-[#1F1F1F] hover:bg-white'}`}>{statusLabels[s]}</button>
+            ))}
+          </div>
         </div>
+        {activeOptionalFilters.map(attr => {
+          const options = OPTIONAL_FILTER_OPTIONS[attr] ?? [];
+          const current = optionalFilterValues[attr] ?? '';
+          return (
+            <div key={attr}>
+              <div className="flex items-center gap-1.5 mb-2">
+                <p className="text-[11px] uppercase tracking-wider text-[#6b7280]">{attr}</p>
+                <button onClick={() => onRemoveOptionalFilter(attr)} className="p-0.5 hover:bg-[#F2F2F2]" title="Remove filter">
+                  <X size={10} className="text-[#9ca3af]" />
+                </button>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {options.map(opt => (
+                  <button
+                    key={opt}
+                    onClick={() => onOptionalFilterChange(attr, opt === 'All' ? '' : opt)}
+                    className={`px-2.5 py-1 text-[12px] transition-colors ${
+                      (opt === 'All' && !current) || current === opt
+                        ? 'bg-[#C5143D] text-white'
+                        : 'bg-[#F2F2F2] text-[#1F1F1F] hover:bg-white'
+                    }`}
+                  >
+                    {opt}
+                  </button>
+                ))}
+              </div>
+            </div>
+          );
+        })}
       </div>
-      <button onClick={onClose} className="ml-auto p-1 hover:bg-[#F2F2F2]"><X size={14} className="text-[#6b7280]" /></button>
     </div>
   );
 }
@@ -1382,7 +1495,6 @@ function QuickPreviewPanel({ item, onClose, onViewCanvas, onEdit }: {
             <StatusBadge status={item.status} />
           </div>
         </div>
-        <p className="text-[13px] text-[#6b7280] overflow-hidden" style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}>{contentExcerpt}</p>
         {/* System Attributes */}
         <div className="py-3 border-b border-[#d1d5db]">
           <p className="text-[10px] uppercase tracking-wider text-[#9ca3af] mb-2">System Attributes</p>

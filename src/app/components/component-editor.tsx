@@ -7,7 +7,7 @@ import {
   Type, Settings2, Table, Code, MoreHorizontal, Pencil, PanelLeft, PanelTop,
 } from 'lucide-react';
 import { repositoryItems, dynamicRepositoryItems, draftParagraphsStore, paragraphsByItemId, dataElements, referenceDefinitions, embeddedVariableEntries } from './mock-data';
-import { TypeBadge, StatusBadge } from './type-badge';
+import { TypeBadge, StatusBadge, VersionDropdown } from './type-badge';
 import { MetaKV } from './meta-kv';
 import { toast } from 'sonner';
 import { ConditionCodeEditor } from './condition-code-editor';
@@ -523,7 +523,8 @@ export function ComponentEditor() {
           </button>
           <div className="flex items-center gap-2">
             <span className="text-[14px] text-[#1F1F1F]">{displayName}</span>
-            <StatusBadge status={component.status} version={component.version} />
+            <StatusBadge status={component.status} />
+            {component.version && <VersionDropdown version={component.version} />}
             {isDirty && <span className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5">Unsaved</span>}
           </div>
         </div>
