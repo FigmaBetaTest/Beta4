@@ -1,13 +1,13 @@
 import { NavLink, Outlet, useLocation, useParams, Link } from 'react-router';
 import { useState } from 'react';
-import { Bell, LogOut, Database, CheckSquare, Check, X, ChevronRight, Clock, FileDown } from 'lucide-react';
+import { Bell, LogOut, Database, CheckSquare, Check, X, ChevronRight, Clock, Braces } from 'lucide-react';
 import svgPaths from '../../imports/svg-l50t4u13nm';
 import { repositoryItems, foundationTypeLabels, dynamicFoundationItems } from './mock-data';
 
 const navItems = [
   { to: '/', label: 'Repository', icon: Database },
   { to: '/approvals', label: 'Approvals', icon: CheckSquare },
-  { to: '/export', label: 'Export', icon: FileDown },
+  { to: '/export', label: 'Schema', icon: Braces },
 ];
 
 export function RepositoryLayoutShell() {
