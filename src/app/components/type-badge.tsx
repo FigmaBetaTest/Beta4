@@ -31,7 +31,19 @@ const typeLabels: Record<ItemType, string> = {
   'Component': 'CMP',
 };
 
-export function TypeBadge({ type }: { type: ItemType }) {
+export function TypeBadge({ type, analogue }: { type: ItemType; analogue?: boolean }) {
+  if (analogue) {
+    return (
+      <span
+        className={`inline-flex items-center px-2 py-0.5 text-[11px] font-mono border-dashed border ${typeColors[type]}`}
+        style={{
+          backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(0,0,0,0.06) 3px, rgba(0,0,0,0.06) 4px)`,
+        }}
+      >
+        {typeLabels[type]}
+      </span>
+    );
+  }
   return (
     <span className={`inline-flex items-center px-2 py-0.5 text-[11px] font-mono border ${typeColors[type]}`}>
       {typeLabels[type]}

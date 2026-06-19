@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo, type ReactNode } from 'react';
-import { useParams, useNavigate } from 'react-router';
+import { useParams, useNavigate, useSearchParams } from 'react-router';
 import { ChevronRight, ChevronDown, Edit3, ArrowLeft, FileText, Plus, X, Search, Layers, Package, GripVertical, Trash2, Save, SendHorizonal, Settings2, ToggleLeft, ToggleRight, Zap, Variable, Trash, AlertTriangle, Code, Info, Send } from 'lucide-react';
 import { contractSections, componentGroupSections, componentSections, repositoryItems, dynamicRepositoryItems, dataElements, sectionsByItemId, paragraphsByItemId, getSubComponentsForItem, type ContractSection, type DataElement } from './mock-data';
 import { VariationBadges, OptionalBadge, TypeBadge, StatusBadge, VersionDropdown } from './type-badge';
@@ -144,12 +144,15 @@ function getSectionsForItem(item: typeof repositoryItems[0]): ContractSection[] 
 export function ContractCanvas() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const isNew = searchParams.get('isNew') === 'true';
   const [tocCollapsed, setTocCollapsed] = useState(false);
-  const [isEditMode, setIsEditMode] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(isNew);
   const [showPublishDialog, setShowPublishDialog] = useState(false);
 
-  const contract = repositoryItems.find(i => i.id === id) || repositoryItems[0];
-  const baseSections = getSectionsForItem(contract);
+  const allItems = [...repositoryItems, ...dynamicRepositoryItems];
+  const contract = allItems.find(i => i.id === id) || repositoryItems[0];
+  const baseSections = isNew ? [] : getSectionsForItem(contract);
 
   // Dynamically added sections
   const [addedSections, setAddedSections] = useState<ContractSection[]>([]);
@@ -440,7 +443,7 @@ export function ContractCanvas() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {!isEditMode ? (
+          {contract.format !== 'analogue' && (!isEditMode ? (
             /* View Mode: show Edit button */
             <button
               onClick={() => setIsEditMode(true)}
@@ -474,11 +477,22 @@ export function ContractCanvas() {
                 <SendHorizonal size={13} /> Submit
               </button>
             </>
-          )}
+          ))}
         </div>
       </div>
 
       <div className="flex flex-1 overflow-hidden">
+        {contract.format === 'analogue' ? (
+          <div className="flex-1 flex flex-col bg-[#FAFAFA]">
+            <div className="flex flex-col items-center justify-center flex-1 gap-3 p-12 text-center">
+              <FileText size={40} className="text-[#d1d5db]" />
+              <p className="text-[15px] text-[#1F1F1F]">Analogue Document</p>
+              <p className="text-[13px] text-[#6b7280] max-w-[420px]">
+                This object is in analogue format. Once a document is uploaded and processed, it will be rendered here as a PDF viewer. Analogue objects cannot be composed or authored digitally.
+              </p>
+            </div>
+          </div>
+        ) : (<>
         {/* TOC Nav — fixed left */}
         <div className={`border-r border-[#d1d5db] bg-[#FAFAFA] overflow-y-auto transition-all shrink-0 ${tocCollapsed ? 'w-[40px] min-w-[40px]' : 'w-[280px] min-w-[280px]'}`}>
           {tocCollapsed ? (
@@ -569,6 +583,7 @@ export function ContractCanvas() {
             setConditionsCodePerBlock={setConditionsCodePerBlock}
           />
         )}
+        </>)}
       </div>
 
       {/* Publish Dialog */}

@@ -1,7 +1,7 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { useNavigate, useSearchParams, useLocation } from 'react-router';
 import { toast } from 'sonner';
-import { Search, Filter, Plus, Eye, Edit3, MoreVertical, ChevronDown, ChevronRight, X, ArrowUp, ArrowDown, FileText, Table2, ArrowRight, Check, Upload, Trash2, Ban, BookOpen } from 'lucide-react';
+import { Search, Filter, Plus, Eye, Edit3, MoreVertical, ChevronDown, ChevronRight, ChevronLeft, X, ArrowUp, ArrowDown, FileText, Table2, ArrowRight, Check, Upload, Download, Trash2, Ban, BookOpen } from 'lucide-react';
 import { repositoryItems, dynamicRepositoryItems, foundationItems, dynamicFoundationItems, foundationTypeLabels, contractSections, componentGroupSections, componentSections, statusLabels, type RepositoryItem, type ItemType, type ItemStatus, type ContractSection, type FoundationItem, type FoundationType } from './mock-data';
 import { TypeBadge, StatusBadge } from './type-badge';
 import { MetaKV } from './meta-kv';
@@ -407,7 +407,7 @@ export function RepositoryPage() {
                   <tr className="border-b border-[#d1d5db]">
                     {([
                       { key: 'name' as SortKey, label: 'Name' },
-                      { key: 'type' as SortKey, label: 'Type' },
+                      { key: 'type' as SortKey, label: 'Class' },
                       { key: 'version' as SortKey, label: 'Version' },
                       { key: 'status' as SortKey, label: 'Status' },
                       { key: 'classOfBusiness' as SortKey, label: 'Class of Business' },
@@ -443,7 +443,7 @@ export function RepositoryPage() {
                       }`}
                     >
                       <td className="px-4 py-3 text-[13px] text-[#1F1F1F] max-w-0 truncate">{item.name}</td>
-                      <td className="px-4 py-3 max-w-0 overflow-hidden"><div className="truncate"><TypeBadge type={item.type} /></div></td>
+                      <td className="px-4 py-3 max-w-0 overflow-hidden"><div className="truncate"><TypeBadge type={item.type} analogue={item.format === 'analogue'} /></div></td>
                       <td className="px-4 py-3 text-[13px] text-[#6b7280] max-w-0 truncate">{item.version}</td>
                       <td className="px-4 py-3 max-w-0 overflow-hidden"><div className="truncate"><StatusBadge status={item.status} /></div></td>
                       <td className="px-4 py-3 text-[13px] text-[#6b7280] max-w-0 truncate">{item.classOfBusiness}</td>
@@ -602,7 +602,11 @@ export function RepositoryPage() {
             dynamicRepositoryItems.push(newItem);
             setLocalItems(prev => [...prev, newItem]);
             setShowCreateDialog(false);
-            navigate(`/editor/${newItem.id}?isNew=true`);
+            if (newItem.format !== 'analogue' && newItem.type === 'Component') {
+              navigate(`/editor/${newItem.id}?isNew=true`);
+            } else {
+              navigate(`/canvas/${newItem.id}?isNew=true`);
+            }
           }}
         />
       )}
@@ -808,11 +812,11 @@ function FoundationQuickPreviewPanel({ item, onClose, onView, onEdit }: {
         <div>
           <div className="flex items-center gap-2 mb-3">
             <span className="px-1.5 py-0.5 text-[11px] font-mono bg-[#F2F2F2] text-[#6b7280] border border-[#d1d5db]">{item.type}</span>
-            <span className={`px-2 py-0.5 text-[11px] border ${metaLcChip}`}>{statusLabels[item.status]}</span>
+            <StatusBadge status={item.status} />
           </div>
         </div>
         <div className="py-3 border-b border-[#d1d5db]">
-          <p className="text-[10px] uppercase tracking-wider text-[#9ca3af] mb-2">System Attributes</p>
+          <p className="text-[10px] uppercase tracking-wider text-[#9ca3af] mb-2">System Metadata</p>
           <div className="space-y-0">
             <MetaSysRow label="ID" value={item.id} />
             <MetaSysRow label="Version" value={item.version} />
@@ -1130,13 +1134,15 @@ function RowActions({ item, onView, onEdit, onWithdraw, onDelete }: { item: Repo
             >
               <Eye size={14} className="text-[#6b7280]" />
             </button>
-            <button
-              onClick={() => onEdit(item)}
-              className="p-1.5 hover:bg-[#F2F2F2] transition-colors"
-              title="Edit Component"
-            >
-              <Edit3 size={14} className="text-[#6b7280]" />
-            </button>
+            {item.format !== 'analogue' && (
+              <button
+                onClick={() => onEdit(item)}
+                className="p-1.5 hover:bg-[#F2F2F2] transition-colors"
+                title="Edit Component"
+              >
+                <Edit3 size={14} className="text-[#6b7280]" />
+              </button>
+            )}
           </>
         );
       default:
@@ -1167,6 +1173,24 @@ function RowActions({ item, onView, onEdit, onWithdraw, onDelete }: { item: Repo
           <>
             <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
             <div className="absolute right-0 top-full mt-1 bg-white border border-[#d1d5db] shadow-lg z-20 min-w-[130px]">
+              <button
+                onClick={() => {
+                  const json = JSON.stringify(item, null, 2);
+                  const blob = new Blob([json], { type: 'application/json' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `${item.id}.json`;
+                  a.click();
+                  URL.revokeObjectURL(url);
+                  setMenuOpen(false);
+                }}
+                className="w-full flex items-center gap-2 px-3 py-2 text-left text-[13px] text-[#6b7280] hover:bg-[#F2F2F2] transition-colors"
+                style={{ fontFamily: "'DM Sans', sans-serif" }}
+              >
+                <Download size={13} />
+                Download
+              </button>
               {item.status !== 'WITHDRAWN' && item.status !== 'ARCHIVED' && (
                 <button
                   onClick={() => { onWithdraw(item); setMenuOpen(false); }}
@@ -1453,18 +1477,20 @@ function QuickPreviewPanel({ item, onClose, onViewCanvas, onEdit }: {
           <div className="flex gap-2">
             <button
               onClick={() => onViewCanvas(item)}
-              className="flex-1 flex items-center justify-center gap-1.5 bg-[#F2F2F2] text-[#1F1F1F] px-3 py-2 text-[14px] hover:bg-white transition-all duration-200"
+              className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-[14px] transition-all duration-200 ${item.format === 'analogue' ? 'bg-[#C5143D] text-white hover:bg-[#F2F2F2] hover:text-[#C5143D]' : 'bg-[#F2F2F2] text-[#1F1F1F] hover:bg-white'}`}
               style={{ borderRadius: '0px' }}
             >
               <Eye size={14} /> View
             </button>
-            <button
-              onClick={() => onEdit(item)}
-              className="flex-1 flex items-center justify-center gap-1.5 bg-[#C5143D] text-white px-3 py-2 text-[14px] hover:bg-[#F2F2F2] hover:text-[#C5143D] transition-all duration-200"
-              style={{ borderRadius: '0px' }}
-            >
-              <Edit3 size={14} /> Edit
-            </button>
+            {item.format !== 'analogue' && (
+              <button
+                onClick={() => onEdit(item)}
+                className="flex-1 flex items-center justify-center gap-1.5 bg-[#C5143D] text-white px-3 py-2 text-[14px] hover:bg-[#F2F2F2] hover:text-[#C5143D] transition-all duration-200"
+                style={{ borderRadius: '0px' }}
+              >
+                <Edit3 size={14} /> Edit
+              </button>
+            )}
           </div>
         );
       default:
@@ -1495,9 +1521,9 @@ function QuickPreviewPanel({ item, onClose, onViewCanvas, onEdit }: {
             <StatusBadge status={item.status} />
           </div>
         </div>
-        {/* System Attributes */}
+        {/* System Metadata */}
         <div className="py-3 border-b border-[#d1d5db]">
-          <p className="text-[10px] uppercase tracking-wider text-[#9ca3af] mb-2">System Attributes</p>
+          <p className="text-[10px] uppercase tracking-wider text-[#9ca3af] mb-2">System Metadata</p>
           <div className="space-y-0">
             <MetaSysRow label="ID" value={item.id} />
             <MetaSysRow label="Version ID" value={metaVersionId} />
@@ -1669,6 +1695,7 @@ function CreateComponentDialog({ onClose, onCreate }: {
       description: '',
       usedIn: [],
       format: objectFormat === 'analog' ? 'analogue' : 'digital',
+      fileUrl: isAnalog && uploadedFile ? URL.createObjectURL(uploadedFile) : undefined,
     };
     onCreate(newItem);
   };

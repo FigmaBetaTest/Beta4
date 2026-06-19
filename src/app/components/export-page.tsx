@@ -257,6 +257,108 @@ function JsonNode({
   );
 }
 
+// ── Schema JSON ──────────────────────────────────────────────────────────────
+
+const SCHEMA_JSON = JSON.stringify({
+  components: {
+    schemas: {
+      Object: {
+        description: "Object is of the types listed below.",
+        required: ["objectType"],
+        properties: {
+          objectType: { type: "string", enum: ["Contract", "Component-Group", "Component"] },
+          id: { type: "string" },
+          name: { type: "string" },
+          status: { type: "string", enum: ["DRAFT", "PENDING_APPROVAL", "ACTIVE", "ARCHIVED", "WITHDRAWN"] },
+          version: { type: "string", example: "1.0.0" },
+          classOfBusiness: { type: "string" },
+          jurisdiction: { type: "string" },
+          owner: { type: "string" },
+          lastModified: { type: "string", format: "date" },
+          description: { type: "string" },
+          format: { type: "string", enum: ["digital", "analogue"] },
+          usedIn: { type: "array", items: { type: "string" } },
+        },
+      },
+      Contract: {
+        allOf: [
+          { $ref: "#/components/schemas/Object" },
+          {
+            properties: {
+              objectType: { type: "string", enum: ["Contract"] },
+              sections: { type: "array", items: { $ref: "#/components/schemas/ContractSection" } },
+            },
+          },
+        ],
+      },
+      ComponentGroup: {
+        allOf: [
+          { $ref: "#/components/schemas/Object" },
+          {
+            properties: {
+              objectType: { type: "string", enum: ["Component-Group"] },
+              sections: { type: "array", items: { $ref: "#/components/schemas/ContractSection" } },
+            },
+          },
+        ],
+      },
+      Component: {
+        allOf: [
+          { $ref: "#/components/schemas/Object" },
+          {
+            properties: {
+              objectType: { type: "string", enum: ["Component"] },
+              heading: { $ref: "#/components/schemas/HeadingDataElement" },
+              text: { $ref: "#/components/schemas/TextDataElement" },
+              variations: { type: "array", items: { $ref: "#/components/schemas/Variant" } },
+            },
+          },
+        ],
+      },
+      ContractSection: {
+        properties: {
+          id: { type: "string" },
+          title: { type: "string" },
+          components: { type: "array", items: { $ref: "#/components/schemas/Component" } },
+        },
+      },
+      HeadingDataElement: {
+        properties: {
+          id: { type: "string" },
+          content: { type: "string" },
+          level: { type: "integer", minimum: 1, maximum: 6 },
+        },
+      },
+      TextDataElement: {
+        properties: {
+          id: { type: "string" },
+          content: { type: "string" },
+          format: { type: "string", enum: ["plain", "rich"] },
+        },
+      },
+      Variant: {
+        properties: {
+          id: { type: "string" },
+          label: { type: "string" },
+          condition: { type: "string" },
+          text: { $ref: "#/components/schemas/TextDataElement" },
+        },
+      },
+      MetadataItem: {
+        properties: {
+          id: { type: "string" },
+          name: { type: "string" },
+          type: { type: "string", enum: ["DEF", "GV", "LOV", "TEC", "SYS", "ATT"] },
+          status: { type: "string", enum: ["DRAFT", "PENDING_APPROVAL", "ACTIVE", "ARCHIVED", "WITHDRAWN"] },
+          version: { type: "string" },
+          body: { type: "string" },
+          wolExpression: { type: "string" },
+        },
+      },
+    },
+  },
+}, null, 2);
+
 // ── Schema YAML ──────────────────────────────────────────────────────────────
 
 const SCHEMA_YAML = `components:
@@ -837,21 +939,28 @@ function YamlTreeView({ yaml }: { yaml: string }) {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-type PageTab = 'schema' | 'visualization';
+type PageTab = 'schema' | 'visualization' | 'guidance';
 
 export function ExportPage() {
   const [pageTab, setPageTab] = useState<PageTab>('schema');
   const [copied, setCopied] = useState(false);
+  const [schemaFormat, setSchemaFormat] = useState<'yaml' | 'json'>('yaml');
 
   const handleDownload = () => {
     const date = new Date().toISOString().split('T')[0];
-    const blob = new Blob([SCHEMA_YAML], { type: 'application/yaml' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `wol-schema-${date}.yaml`;
-    a.click();
-    URL.revokeObjectURL(url);
+    if (schemaFormat === 'yaml') {
+      const blob = new Blob([SCHEMA_YAML], { type: 'application/yaml' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = `wol-schema-${date}.yaml`; a.click();
+      URL.revokeObjectURL(url);
+    } else {
+      const blob = new Blob([SCHEMA_JSON], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = `wol-schema-${date}.json`; a.click();
+      URL.revokeObjectURL(url);
+    }
   };
 
   const handleCopy = () => {
@@ -866,28 +975,19 @@ export function ExportPage() {
       <div className="flex items-center justify-between mb-4">
         <div>
           <h1 className="text-[22px] text-[#1F1F1F] leading-[90%]">Schema</h1>
-          <p className="text-[13px] text-[#6b7280] mt-1">View and download the full repository in structured format</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handleDownload}
-            className="flex items-center gap-1.5 px-[40px] py-[8px] text-[14px] bg-[#C5143D] text-white hover:bg-[#F2F2F2] hover:text-[#C5143D] transition-colors"
-          >
-            <FileText size={14} />
-            Download Guidance
-          </button>
+          <p className="text-[13px] text-[#6b7280] mt-1">View and download the repository schema</p>
         </div>
       </div>
 
       {/* Tabs */}
       <div className="flex items-center gap-0 mb-4 border-b border-[#d1d5db]">
-        {(['schema', 'visualization'] as PageTab[]).map(tab => (
+        {(['schema', 'visualization', 'guidance'] as PageTab[]).map(tab => (
           <button
             key={tab}
             onClick={() => setPageTab(tab)}
-            className={`px-4 py-2 text-[13px] capitalize border-b-2 -mb-px transition-colors ${
+            className={`px-4 py-2 text-[13px] border-b-2 transition-colors ${
               pageTab === tab
-                ? 'border-[#1F1F1F] text-[#1F1F1F] font-medium'
+                ? 'border-[#C5143D] text-[#C5143D]'
                 : 'border-transparent text-[#6b7280] hover:text-[#1F1F1F]'
             }`}
           >
@@ -904,9 +1004,23 @@ export function ExportPage() {
             style={{ background: '#F2F2F2', borderBottom: '1px solid #d1d5db', flexShrink: 0 }}
             className="flex items-center justify-between px-4 py-2"
           >
-            <div className="flex items-center gap-2">
-              <Code2 size={13} style={{ color: '#6b7280' }} />
-              <span style={{ fontFamily: "'DM Mono', 'Fira Mono', Consolas, monospace", fontSize: 12, color: '#6b7280' }}>YAML</span>
+            <div className="flex items-center gap-1" style={{ background: '#e5e7eb', borderRadius: 2, padding: 2 }}>
+              {(['yaml', 'json'] as const).map(fmt => (
+                <button
+                  key={fmt}
+                  onClick={() => setSchemaFormat(fmt)}
+                  style={{
+                    padding: '2px 10px', fontSize: 11, border: 'none', cursor: 'pointer', borderRadius: 2,
+                    fontFamily: "'DM Mono', 'Fira Mono', Consolas, monospace",
+                    background: schemaFormat === fmt ? '#fff' : 'transparent',
+                    color: schemaFormat === fmt ? '#1F1F1F' : '#6b7280',
+                    fontWeight: schemaFormat === fmt ? 500 : 400,
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  {fmt.toUpperCase()}
+                </button>
+              ))}
             </div>
             <button
               onClick={handleDownload}
@@ -915,9 +1029,18 @@ export function ExportPage() {
               Download Code
             </button>
           </div>
-          {/* Tree view */}
-          <div style={{ flex: 1, minHeight: 0 }}>
-            <YamlTreeView yaml={SCHEMA_YAML} />
+          {/* Tree view / JSON view */}
+          <div style={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
+            {schemaFormat === 'yaml'
+              ? <YamlTreeView yaml={SCHEMA_YAML} />
+              : (
+                <pre style={{
+                  margin: 0, padding: '16px 20px', fontSize: 12,
+                  fontFamily: "'DM Mono', 'Fira Mono', Consolas, monospace",
+                  color: '#1F1F1F', background: '#fff', lineHeight: 1.7, whiteSpace: 'pre-wrap', wordBreak: 'break-word',
+                }}>{SCHEMA_JSON}</pre>
+              )
+            }
           </div>
         </div>
       )}
@@ -941,7 +1064,39 @@ export function ExportPage() {
             </button>
           </div>
           {/* Empty canvas */}
-          <div className="flex-1 min-h-0 bg-[#FAFAFA]" />
+          <div className="flex-1 min-h-0 bg-[#FAFAFA] flex flex-col items-center justify-center gap-2">
+            <span style={{ fontSize: 13, color: '#9ca3af', fontFamily: "'DM Sans', sans-serif" }}>Visualization will be displayed here</span>
+          </div>
+        </div>
+      )}
+
+      {/* Guidance tab content */}
+      {pageTab === 'guidance' && (
+        <div className="flex flex-col flex-1 min-h-0 overflow-hidden border border-[#d1d5db]">
+          {/* Header bar */}
+          <div
+            style={{ background: '#F2F2F2', borderBottom: '1px solid #d1d5db', flexShrink: 0 }}
+            className="flex items-center justify-between px-4 py-2"
+          >
+            <div className="flex items-center gap-2">
+              <span style={{ fontFamily: "'DM Mono', 'Fira Mono', Consolas, monospace", fontSize: 12, color: '#6b7280' }}>Guidance</span>
+            </div>
+            <button
+              onClick={() => {
+                const a = document.createElement('a');
+                a.href = '/wol-guidance.pdf';
+                a.download = 'wol-guidance.pdf';
+                a.click();
+              }}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px 6px', color: '#6b7280', fontSize: 11, fontFamily: "'DM Sans', sans-serif", display: 'flex', alignItems: 'center', gap: 4 }}
+            >
+              Download Guidance
+            </button>
+          </div>
+          {/* PDF Viewer */}
+          <div className="flex-1 min-h-0 bg-[#FAFAFA] flex flex-col items-center justify-center gap-2">
+            <span style={{ fontSize: 13, color: '#9ca3af', fontFamily: "'DM Sans', sans-serif" }}>Guidance document will be displayed here</span>
+          </div>
         </div>
       )}
     </div>
