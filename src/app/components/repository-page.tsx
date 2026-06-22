@@ -320,7 +320,7 @@ export function RepositoryPage() {
 
           {/* Foundations Search & Filter Bar */}
           {isFoundationTab && (
-            <>
+            <div style={{ position: 'relative' }}>
               <div className="flex items-center gap-3 mb-4">
                 <div className="group flex items-center gap-2 bg-white border border-[#d1d5db] px-3 py-2 focus-within:border-[#C5143D] focus-within:ring-1 focus-within:ring-[#C5143D]" style={{ borderRadius: '0px', width: 300 }}>
                   <Search size={15} className="text-[#6b7280]" />
@@ -383,7 +383,7 @@ export function RepositoryPage() {
                   onClose={() => setShowFoundFacets(false)}
                 />
               )}
-            </>
+            </div>
           )}
 
           {/* Results Area */}
@@ -719,7 +719,7 @@ function FoundationFacetPanel({
   const shouldShowSegmentFilter = showSegmentFilter ?? true;
 
   return (
-    <div className="mt-2 p-4 bg-white border border-[#d1d5db] flex items-start gap-8 flex-wrap">
+    <div className="absolute top-full left-0 right-0 z-50 mt-1 p-4 bg-white border border-[#d1d5db] flex items-start gap-8 flex-wrap" style={{ boxShadow: '0 8px 24px rgba(0,0,0,0.08)' }}>
       {shouldShowTypeFilter && (
         <div>
           <p className="text-[11px] uppercase tracking-wider text-[#6b7280] mb-2">Foundation Type</p>

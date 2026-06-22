@@ -1,8 +1,7 @@
-import { NavLink, Outlet, useLocation, useParams, Link } from 'react-router';
+import { NavLink, Outlet, useLocation, Link } from 'react-router';
 import { useState } from 'react';
-import { Bell, LogOut, Database, CheckSquare, Check, X, ChevronRight, Clock, Braces } from 'lucide-react';
+import { Bell, LogOut, Database, CheckSquare, Check, X, Clock, Braces } from 'lucide-react';
 import svgPaths from '../../imports/svg-l50t4u13nm';
-import { repositoryItems, foundationTypeLabels, dynamicFoundationItems } from './mock-data';
 
 const navItems = [
   { to: '/', label: 'Repository', icon: Database },
@@ -13,64 +12,8 @@ const navItems = [
 export function RepositoryLayoutShell() {
   const [showNotifications, setShowNotifications] = useState(false);
   const location = useLocation();
-  const params = useParams();
 
   const isApprovals = location.pathname === '/approvals';
-
-  // Build breadcrumbs based on current route
-  const buildBreadcrumbs = () => {
-    const crumbs: { label: string; to?: string }[] = [{ label: 'Repository', to: '/' }];
-    const pathname = location.pathname;
-    const searchParams = new URLSearchParams(location.search);
-    const fromPath = searchParams.get('from');
-
-    if (pathname.startsWith('/canvas/') && params.id) {
-      const item = repositoryItems.find((i) => i.id === params.id);
-      crumbs.push({ label: 'Canvas' });
-      if (item) {
-        crumbs.push({ label: item.name });
-      }
-    } else if (pathname.startsWith('/editor/') && params.id) {
-      const item = repositoryItems.find((i) => i.id === params.id);
-
-      // If coming from a canvas, add canvas breadcrumb with link
-      if (fromPath && fromPath.startsWith('canvas/')) {
-        const canvasId = fromPath.replace('canvas/', '');
-        const canvasItem = repositoryItems.find((i) => i.id === canvasId);
-        crumbs.push({ label: 'Canvas', to: `/${fromPath}` });
-        if (canvasItem) {
-          crumbs.push({ label: canvasItem.name, to: `/${fromPath}` });
-        }
-      }
-
-      crumbs.push({ label: 'Editor' });
-      if (item) {
-        crumbs.push({ label: item.name });
-      } else {
-        const nameParam = searchParams.get('name');
-        if (nameParam) {
-          crumbs.push({ label: nameParam });
-        }
-      }
-    } else if (pathname.startsWith('/foundation-editor/') && params.id) {
-      const allFoundations = [...dynamicFoundationItems];
-      const item = allFoundations.find((i) => i.id === params.id);
-      const searchParams2 = new URLSearchParams(location.search);
-      crumbs.push({ label: 'Editor' });
-      if (item) {
-        crumbs.push({ label: foundationTypeLabels[item.type] });
-      } else {
-        const typeParam = searchParams2.get('type');
-        if (typeParam && typeParam in foundationTypeLabels) {
-          crumbs.push({ label: foundationTypeLabels[typeParam as keyof typeof foundationTypeLabels] });
-        }
-      }
-    }
-
-    return crumbs;
-  };
-
-  const breadcrumbs = buildBreadcrumbs();
 
   const notifications = [
     {
@@ -267,28 +210,6 @@ export function RepositoryLayoutShell() {
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden bg-background">
-        {/* Top Bar — hidden on Approvals */}
-        {!isApprovals && false && (
-          <header className="h-[42px] min-h-[42px] border-b border-border flex items-center justify-between px-4 bg-white">
-            <div className="flex items-center gap-1">
-              {breadcrumbs.map((crumb, index) => (
-                <span key={index} className="flex items-center gap-1">
-                  {index > 0 && <ChevronRight size={12} className="text-[#9ca3af]" />}
-                  {crumb.to && index < breadcrumbs.length - 1 ? (
-                    <Link to={crumb.to} className="text-[13px] text-[#6b7280] no-underline hover:text-[#1F1F1F] transition-colors">
-                      {crumb.label}
-                    </Link>
-                  ) : (
-                    <span className={`text-[13px] ${index === breadcrumbs.length - 1 && breadcrumbs.length > 1 ? 'text-[#1F1F1F]' : 'text-[#6b7280]'}`}>
-                      {crumb.label}
-                    </span>
-                  )}
-                </span>
-              ))}
-            </div>
-          </header>
-        )}
-
         {/* Page Content */}
         <div className="flex-1 overflow-hidden">
           <Outlet />
