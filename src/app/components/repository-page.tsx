@@ -2,7 +2,7 @@ import { useState, useMemo, useRef, useEffect } from 'react';
 import { useNavigate, useSearchParams, useLocation } from 'react-router';
 import { toast } from 'sonner';
 import { Search, Filter, Plus, Eye, Edit3, MoreVertical, ChevronDown, ChevronRight, ChevronLeft, X, ArrowUp, ArrowDown, FileText, Table2, ArrowRight, Check, Upload, Download, Trash2, Ban, BookOpen } from 'lucide-react';
-import { repositoryItems, dynamicRepositoryItems, foundationItems, dynamicFoundationItems, foundationTypeLabels, contractSections, componentGroupSections, componentSections, statusLabels, type RepositoryItem, type ItemType, type ItemStatus, type ContractSection, type FoundationItem, type FoundationType } from './mock-data';
+import { repositoryItems, dynamicRepositoryItems, foundationItems, dynamicFoundationItems, foundationTypeLabels, contractSections, componentGroupSections, componentSections, statusLabels, riskCodes, cobOptions, jurisdictionOptions, type RepositoryItem, type ItemType, type ItemStatus, type ContractSection, type FoundationItem, type FoundationType } from './mock-data';
 import { TypeBadge, StatusBadge } from './type-badge';
 import { MetaKV } from './meta-kv';
 
@@ -247,7 +247,7 @@ export function RepositoryPage() {
               onClick={() => setActiveTab('metadata')}
               className={`px-4 py-2 text-[13px] border-b-2 transition-colors ${activeTab === 'metadata' ? 'border-[#C5143D] text-[#C5143D]' : 'border-transparent text-[#6b7280] hover:text-[#1F1F1F]'}`}
             >
-              Attributes
+              Descriptive Metadata
             </button>
           </div>
 
@@ -282,6 +282,27 @@ export function RepositoryPage() {
                 >
                   <Filter size={14} />
                   Filters
+                  {(() => {
+                    const count = [typeFilter, statusFilter, cobFilter].filter(Boolean).length
+                      + activeOptionalFilters.filter(a => optionalFilterValues[a] && optionalFilterValues[a] !== 'All').length;
+                    return count > 0 ? <span className="font-normal">({count})</span> : null;
+                  })()}
+                  {([typeFilter, statusFilter, cobFilter].some(Boolean) || activeOptionalFilters.some(a => optionalFilterValues[a] && optionalFilterValues[a] !== 'All')) && (
+                    <span
+                      role="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setTypeFilter('');
+                        setStatusFilter('');
+                        setCobFilter('');
+                        setActiveOptionalFilters([]);
+                        setOptionalFilterValues({});
+                      }}
+                      className="ml-0.5 opacity-70 hover:opacity-100"
+                    >
+                      <X size={12} />
+                    </span>
+                  )}
                 </button>
                 <div className="ml-auto flex items-center gap-3">
                 <button
@@ -326,7 +347,7 @@ export function RepositoryPage() {
                   <Search size={15} className="text-[#6b7280]" />
                   <input
                     type="text"
-                    placeholder={isMetadataTab ? 'Search attributes...' : 'Search foundations...'}
+                    placeholder={isMetadataTab ? 'Search descriptive metadata...' : 'Search foundations...'}
                     className="flex-1 bg-transparent text-[14px] text-[#1F1F1F] placeholder:text-[#9ca3af] outline-none border-none"
                     style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '14px' }}
                     value={foundSearch}
@@ -349,6 +370,24 @@ export function RepositoryPage() {
                 >
                   <Filter size={14} />
                   Filters
+                  {(() => {
+                    const count = [foundTypeFilter, foundStatusFilter, foundOwnerFilter].filter(Boolean).length;
+                    return count > 0 ? <span className="font-normal">({count})</span> : null;
+                  })()}
+                  {[foundTypeFilter, foundStatusFilter, foundOwnerFilter].some(Boolean) && (
+                    <span
+                      role="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setFoundTypeFilter('');
+                        setFoundStatusFilter('');
+                        setFoundOwnerFilter('');
+                      }}
+                      className="ml-0.5 opacity-70 hover:opacity-100"
+                    >
+                      <X size={12} />
+                    </span>
+                  )}
                 </button>
                 <div className="ml-auto flex items-center gap-3">
                 <button
@@ -373,7 +412,7 @@ export function RepositoryPage() {
                   segmentFilter={foundSegmentFilter}
                   ownerFilter={foundOwnerFilter}
                   items={activeFoundationItems}
-                  availableTypes={isMetadataTab ? ['ATT'] : ['DEF', 'GV', 'LOV', 'TEC', 'SYS']}
+                  availableTypes={isMetadataTab ? ['ATT'] : ['DEF', 'VAR', 'LOV', 'TEC', 'SYS']}
                   showTypeFilter={!isMetadataTab}
                   showSegmentFilter={false}
                   onTypeChange={setFoundTypeFilter}
@@ -472,11 +511,11 @@ export function RepositoryPage() {
                 {activeFoundationRows.length === 0 ? (
                   <div className="flex-1 flex flex-col items-center justify-center text-center p-12 border border-dashed border-[#d1d5db] bg-white">
                     <BookOpen size={32} className="text-[#d1d5db] mb-3" />
-                    <p className="text-[14px] text-[#6b7280] mb-1">{isMetadataTab ? 'No Attributes yet.' : 'No Foundations yet.'}</p>
+                    <p className="text-[14px] text-[#6b7280] mb-1">{isMetadataTab ? 'No Descriptive Metadata yet.' : 'No Foundations yet.'}</p>
                     <p className="text-[13px] text-[#9ca3af]">
                       {isMetadataTab
                         ? 'Create Attribute objects for contracts and components.'
-                        : 'Create a Definition, Governing Variable, LOV, Technical or System Guidance.'}
+                        : 'Create a Definition, Variable, LOV, Technical or System Guidance.'}
                     </p>
                     <button
                       onClick={() => {
@@ -614,7 +653,7 @@ export function RepositoryPage() {
       {/* Create Foundation Dialog */}
       {showCreateFoundDialog && (
         <CreateFoundationDialog
-          allowedTypes={['DEF', 'GV', 'LOV', 'TEC', 'SYS']}
+          allowedTypes={['DEF', 'VAR', 'LOV', 'TEC', 'SYS']}
           onClose={() => setShowCreateFoundDialog(false)}
           onCreate={(newItem) => {
             setShowCreateFoundDialog(false);
@@ -711,7 +750,7 @@ function FoundationFacetPanel({
   onOwnerChange: (v: string) => void;
   onClose: () => void;
 }) {
-  const types: FoundationType[] = availableTypes ?? ['DEF', 'GV', 'LOV', 'ATT', 'TEC', 'SYS'];
+  const types: FoundationType[] = availableTypes ?? ['DEF', 'VAR', 'LOV', 'ATT', 'TEC', 'SYS'];
   const statuses: ItemStatus[] = ['DRAFT', 'PENDING_APPROVAL', 'ACTIVE', 'ARCHIVED', 'WITHDRAWN'];
   const segments = Array.from(new Set(items.map(i => i.segment).filter(Boolean))) as string[];
   const owners = Array.from(new Set(items.map(i => i.owner)));
@@ -811,7 +850,9 @@ function FoundationQuickPreviewPanel({ item, onClose, onView, onEdit }: {
       <div className="p-4 space-y-4">
         <div>
           <div className="flex items-center gap-2 mb-3">
-            <span className="px-1.5 py-0.5 text-[11px] font-mono bg-[#F2F2F2] text-[#6b7280] border border-[#d1d5db]">{item.type}</span>
+            {item.type !== 'ATT' && (
+              <span className="px-1.5 py-0.5 text-[11px] font-mono bg-[#F2F2F2] text-[#6b7280] border border-[#d1d5db]">{item.type}</span>
+            )}
             <StatusBadge status={item.status} />
           </div>
         </div>
@@ -876,7 +917,7 @@ function FoundationQuickPreviewPanel({ item, onClose, onView, onEdit }: {
 
 const FOUNDATION_TYPE_OPTIONS: { value: FoundationType; label: string; description: string }[] = [
   { value: 'DEF', label: 'Definition', description: 'A term or concept definition used across contracts' },
-  { value: 'GV', label: 'Governing Variable', description: 'A variable that drives conditional logic' },
+  { value: 'VAR', label: 'Variable', description: 'A variable that drives conditional logic' },
   { value: 'LOV', label: 'List of Values', description: 'An enumerated set of allowed values' },
   { value: 'ATT', label: 'Attribute', description: 'Structured descriptive attributes for objects' },
   { value: 'TEC', label: 'Technical Guidance', description: 'System-level or drafting technical notes' },
@@ -888,33 +929,79 @@ function CreateFoundationDialog({ onClose, onCreate, allowedTypes }: {
   onCreate: (item: FoundationItem) => void;
   allowedTypes?: FoundationType[];
 }) {
-  const [step, setStep] = useState<1 | 2>(1);
+  const [step, setStep] = useState<1 | 2 | 3>(1);
   const [selectedType, setSelectedType] = useState<FoundationType | null>(null);
   const [objectFormat, setObjectFormat] = useState<'digital' | 'analog' | ''>('');
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [title, setTitle] = useState('');
+  const [selectedRiskCodes, setSelectedRiskCodes] = useState<string[]>([]);
+  const [cob, setCob] = useState('');
+  const [selectedJurisdictions, setSelectedJurisdictions] = useState<string[]>([]);
+  const [wolPublicationNotes, setWolPublicationNotes] = useState('');
+  const [showRiskCodeDropdown, setShowRiskCodeDropdown] = useState(false);
+  const [showJurisdictionDropdown, setShowJurisdictionDropdown] = useState(false);
+  const riskCodeBtnRef = useRef<HTMLButtonElement>(null);
+  const riskCodePanelRef = useRef<HTMLDivElement>(null);
+  const [riskCodeDropdownPos, setRiskCodeDropdownPos] = useState<{ top: number; left: number; width: number } | null>(null);
+  const jurisdictionBtnRef = useRef<HTMLButtonElement>(null);
+  const jurisdictionPanelRef = useRef<HTMLDivElement>(null);
+  const [jurisdictionDropdownPos, setJurisdictionDropdownPos] = useState<{ top: number; left: number; width: number } | null>(null);
 
+  useEffect(() => {
+    if (!showRiskCodeDropdown) return;
+    const handler = (e: MouseEvent) => {
+      if (!riskCodeBtnRef.current?.contains(e.target as Node) && !riskCodePanelRef.current?.contains(e.target as Node))
+        setShowRiskCodeDropdown(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [showRiskCodeDropdown]);
+
+  useEffect(() => {
+    if (!showJurisdictionDropdown) return;
+    const handler = (e: MouseEvent) => {
+      if (!jurisdictionBtnRef.current?.contains(e.target as Node) && !jurisdictionPanelRef.current?.contains(e.target as Node))
+        setShowJurisdictionDropdown(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [showJurisdictionDropdown]);
+
+  const toggleJurisdiction = (j: string) =>
+    setSelectedJurisdictions(prev => prev.includes(j) ? prev.filter(x => x !== j) : [...prev, j]);
+
+  // Guidance types (TEC/SYS) get an extra Format step
   const needsFormatStep = selectedType === 'TEC' || selectedType === 'SYS';
   const isAnalog = objectFormat === 'analog';
+  const setupStep: 2 | 3 = needsFormatStep ? 3 : 2;
+  const isSetupStep = step === setupStep;
+  const isFormatStep = needsFormatStep && step === 2;
 
   const canProceedStep1 = selectedType !== null;
   const canProceedFormat = objectFormat !== '' && (!isAnalog || uploadedFile !== null);
+  const canCreate = title.trim() !== '' && cob !== '' && selectedJurisdictions.length > 0;
 
   const stepSubtitle = () => {
-    if (needsFormatStep && step === 2) return 'Select format and optionally upload a document';
-    return 'Choose the type of foundation object you want to create';
+    if (step === 1) return 'Choose the type of foundation object you want to create';
+    if (isFormatStep) return 'Select format and optionally upload a document';
+    return 'Set up the foundation metadata';
   };
 
   const handleCreate = () => {
     const today = new Date().toISOString().split('T')[0];
     const newItem: FoundationItem = {
       id: `found-new-${Date.now()}`,
-      name: foundationTypeLabels[selectedType!],
+      name: title.trim(),
       type: selectedType!,
       status: 'DRAFT',
       version: '0.1.0',
       lastModified: today,
       owner: 'R. Pyke',
       usages: 0,
+      riskCodes: selectedRiskCodes.length > 0 ? selectedRiskCodes : undefined,
+      cob: cob || undefined,
+      jurisdictions: selectedJurisdictions.length > 0 ? selectedJurisdictions : undefined,
+      wolPublicationNotes: wolPublicationNotes.trim() || undefined,
     };
     onCreate(newItem);
   };
@@ -937,11 +1024,46 @@ function CreateFoundationDialog({ onClose, onCreate, allowedTypes }: {
           </button>
         </div>
 
+        {/* Step Indicator */}
+        <div className="px-4 py-3 border-b border-[#d1d5db] bg-[#FAFAFA] flex items-center gap-3">
+          {/* Step 1: Type */}
+          <div className="flex items-center gap-2">
+            <span className={`w-6 h-6 flex items-center justify-center text-[11px] ${
+              step >= 1 ? 'bg-[#C5143D] text-white' : 'bg-[#F2F2F2] text-[#6b7280]'
+            }`}>
+              {step > 1 ? <Check size={12} /> : '1'}
+            </span>
+            <span className={`text-[12px] ${step >= 1 ? 'text-[#1F1F1F]' : 'text-[#9ca3af]'}`}>Type</span>
+          </div>
+          {needsFormatStep && (
+            <>
+              <div className="w-8 h-px bg-[#d1d5db]" />
+              <div className="flex items-center gap-2">
+                <span className={`w-6 h-6 flex items-center justify-center text-[11px] ${
+                  step >= 2 ? 'bg-[#C5143D] text-white' : 'bg-[#F2F2F2] text-[#6b7280]'
+                }`}>
+                  {step > 2 ? <Check size={12} /> : '2'}
+                </span>
+                <span className={`text-[12px] ${step >= 2 ? 'text-[#1F1F1F]' : 'text-[#9ca3af]'}`}>Format</span>
+              </div>
+            </>
+          )}
+          <div className="w-8 h-px bg-[#d1d5db]" />
+          <div className="flex items-center gap-2">
+            <span className={`w-6 h-6 flex items-center justify-center text-[11px] ${
+              step >= setupStep ? 'bg-[#C5143D] text-white' : 'bg-[#F2F2F2] text-[#6b7280]'
+            }`}>
+              {needsFormatStep ? '3' : '2'}
+            </span>
+            <span className={`text-[12px] ${step >= setupStep ? 'text-[#1F1F1F]' : 'text-[#9ca3af]'}`}>Setup</span>
+          </div>
+        </div>
+
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          {/* Type selector — always visible for non-guidance, or on step 1 for guidance */}
-          {(!needsFormatStep || step === 1) && (
-            <div>
+        <div className="flex-1 overflow-y-auto p-4">
+          {/* Step 1: Type Selection */}
+          {step === 1 && (
+            <div className="space-y-3">
               <label className={labelStyle}>
                 Foundation Type <span className="text-[#C5143D]">*</span>
               </label>
@@ -952,7 +1074,6 @@ function CreateFoundationDialog({ onClose, onCreate, allowedTypes }: {
                   setSelectedType(val);
                   setObjectFormat('');
                   setUploadedFile(null);
-                  setStep(1);
                 }}
                 className={inputStyle}
                 style={{ borderRadius: '0px', fontFamily: "'DM Sans', sans-serif", fontSize: '14px' }}
@@ -965,8 +1086,8 @@ function CreateFoundationDialog({ onClose, onCreate, allowedTypes }: {
             </div>
           )}
 
-          {/* Format step — Guidance (TEC/SYS) only */}
-          {needsFormatStep && step === 2 && (
+          {/* Step 2 (Guidance only): Format */}
+          {isFormatStep && (
             <div className="space-y-3">
               <label className={labelStyle}>
                 Format <span className="text-[#C5143D]">*</span>
@@ -1026,12 +1147,149 @@ function CreateFoundationDialog({ onClose, onCreate, allowedTypes }: {
             </div>
           )}
 
+          {/* Setup Step (last step for all types) */}
+          {isSetupStep && (
+            <div className="space-y-4">
+              {/* Title */}
+              <div>
+                <label className={labelStyle}>
+                  Title <span className="text-[#C5143D]">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder={selectedType ? `e.g. ${foundationTypeLabels[selectedType!]}...` : 'Enter a title...'}
+                  className={inputStyle}
+                  style={{ borderRadius: '0px', fontFamily: "'DM Sans', sans-serif", fontSize: '14px' }}
+                  autoFocus
+                />
+              </div>
+
+              {/* Risk Code */}
+              <div className="relative">
+                <label className={labelStyle}>Risk Code</label>
+                <button
+                  ref={riskCodeBtnRef}
+                  type="button"
+                  onClick={() => {
+                    if (!showRiskCodeDropdown && riskCodeBtnRef.current) {
+                      const r = riskCodeBtnRef.current.getBoundingClientRect();
+                      setRiskCodeDropdownPos({ top: r.bottom, left: r.left, width: r.width });
+                    }
+                    setShowRiskCodeDropdown(o => !o);
+                  }}
+                  className={`${inputStyle} text-left flex items-center justify-between cursor-pointer`}
+                  style={{ borderRadius: '0px', fontFamily: "'DM Sans', sans-serif", fontSize: '14px' }}
+                >
+                  <span className={selectedRiskCodes.length > 0 ? 'text-[#1F1F1F]' : 'text-[#9ca3af]'}>
+                    {selectedRiskCodes.length > 0 ? selectedRiskCodes.join(', ') : 'Select risk codes...'}
+                  </span>
+                  <ChevronDown size={14} className={`text-[#6b7280] transition-transform ${showRiskCodeDropdown ? 'rotate-180' : ''}`} />
+                </button>
+                {showRiskCodeDropdown && riskCodeDropdownPos && (
+                  <div
+                    ref={riskCodePanelRef}
+                    className="bg-white border border-[#d1d5db] shadow-lg"
+                    style={{ position: 'fixed', top: riskCodeDropdownPos.top + 2, left: riskCodeDropdownPos.left, width: riskCodeDropdownPos.width, zIndex: 9999, borderRadius: '0px' }}
+                  >
+                    {riskCodes.map(rc => (
+                      <label key={rc.id} className="flex items-center gap-2.5 px-3 py-2 hover:bg-[#F2F2F2] cursor-pointer transition-colors">
+                        <input
+                          type="checkbox"
+                          checked={selectedRiskCodes.includes(rc.id)}
+                          onChange={() => setSelectedRiskCodes(prev => prev.includes(rc.id) ? prev.filter(id => id !== rc.id) : [...prev, rc.id])}
+                          className="accent-[#C5143D] cursor-pointer"
+                        />
+                        <span className="text-[13px] text-[#1F1F1F]">{rc.name}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Class of Business */}
+              <div>
+                <label className={labelStyle}>
+                  Class of Business (COB) <span className="text-[#C5143D]">*</span>
+                </label>
+                <select
+                  value={cob}
+                  onChange={(e) => setCob(e.target.value)}
+                  className={inputStyle}
+                  style={{ borderRadius: '0px', fontFamily: "'DM Sans', sans-serif", fontSize: '14px' }}
+                >
+                  <option value="">Select class of business...</option>
+                  {cobOptions.map(c => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Jurisdiction */}
+              <div className="relative">
+                <label className={labelStyle}>
+                  Jurisdiction <span className="text-[#C5143D]">*</span>
+                </label>
+                <button
+                  ref={jurisdictionBtnRef}
+                  type="button"
+                  onClick={() => {
+                    if (!showJurisdictionDropdown && jurisdictionBtnRef.current) {
+                      const r = jurisdictionBtnRef.current.getBoundingClientRect();
+                      setJurisdictionDropdownPos({ top: r.bottom, left: r.left, width: r.width });
+                    }
+                    setShowJurisdictionDropdown(o => !o);
+                  }}
+                  className={`${inputStyle} text-left flex items-center justify-between cursor-pointer`}
+                  style={{ borderRadius: '0px', fontFamily: "'DM Sans', sans-serif", fontSize: '14px' }}
+                >
+                  <span className={selectedJurisdictions.length > 0 ? 'text-[#1F1F1F]' : 'text-[#9ca3af]'}>
+                    {selectedJurisdictions.length > 0 ? selectedJurisdictions.join(', ') : 'Select jurisdictions...'}
+                  </span>
+                  <ChevronDown size={14} className={`text-[#6b7280] transition-transform ${showJurisdictionDropdown ? 'rotate-180' : ''}`} />
+                </button>
+                {showJurisdictionDropdown && jurisdictionDropdownPos && (
+                  <div
+                    ref={jurisdictionPanelRef}
+                    className="bg-white border border-[#d1d5db] shadow-lg"
+                    style={{ position: 'fixed', top: jurisdictionDropdownPos.top + 2, left: jurisdictionDropdownPos.left, width: jurisdictionDropdownPos.width, zIndex: 9999, borderRadius: '0px' }}
+                  >
+                    {jurisdictionOptions.map(j => (
+                      <label key={j} className="flex items-center gap-2.5 px-3 py-2 hover:bg-[#F2F2F2] cursor-pointer transition-colors">
+                        <input
+                          type="checkbox"
+                          checked={selectedJurisdictions.includes(j)}
+                          onChange={() => toggleJurisdiction(j)}
+                          className="accent-[#C5143D] cursor-pointer"
+                        />
+                        <span className="text-[13px] text-[#1F1F1F]">{j}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* WOL Publication Notes */}
+              <div>
+                <label className={labelStyle}>WOL Publication Notes</label>
+                <textarea
+                  value={wolPublicationNotes}
+                  onChange={(e) => setWolPublicationNotes(e.target.value)}
+                  placeholder="Optional notes for publication…"
+                  rows={3}
+                  className={inputStyle}
+                  style={{ borderRadius: '0px', fontFamily: "'DM Sans', sans-serif", fontSize: '14px', resize: 'vertical' }}
+                />
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Footer */}
         <div className="flex items-center justify-between p-4 border-t border-[#d1d5db]">
           <div>
-            {needsFormatStep && step > 1 && (
+            {step > 1 && (
               <button
                 onClick={() => setStep((step - 1) as 1 | 2 | 3)}
                 className="text-[13px] text-[#6b7280] hover:text-[#1F1F1F] flex items-center gap-1 cursor-pointer"
@@ -1048,23 +1306,8 @@ function CreateFoundationDialog({ onClose, onCreate, allowedTypes }: {
             >
               Cancel
             </button>
-            {/* Non-guidance: Create directly once type is selected */}
-            {!needsFormatStep && (
-              <button
-                onClick={handleCreate}
-                disabled={!selectedType}
-                className={`px-[40px] py-[8px] text-[14px] flex items-center gap-1.5 transition-all duration-200 ${
-                  selectedType
-                    ? 'bg-[#C5143D] text-white hover:bg-[#F2F2F2] hover:text-[#C5143D] cursor-pointer'
-                    : 'bg-[#F2F2F2] text-[#9ca3af] cursor-not-allowed'
-                }`}
-                style={{ borderRadius: '0px' }}
-              >
-                <Plus size={13} /> Create
-              </button>
-            )}
-            {/* Guidance step 1: Continue */}
-            {needsFormatStep && step === 1 && (
+            {/* Step 1 → Continue */}
+            {step === 1 && (
               <button
                 onClick={() => setStep(2)}
                 disabled={!canProceedStep1}
@@ -1078,13 +1321,28 @@ function CreateFoundationDialog({ onClose, onCreate, allowedTypes }: {
                 Continue <ArrowRight size={13} />
               </button>
             )}
-            {/* Guidance step 2: Create */}
-            {needsFormatStep && step === 2 && (
+            {/* Format step → Continue */}
+            {isFormatStep && (
               <button
-                onClick={handleCreate}
+                onClick={() => setStep(3)}
                 disabled={!canProceedFormat}
                 className={`px-[40px] py-[8px] text-[14px] flex items-center gap-1.5 transition-all duration-200 ${
                   canProceedFormat
+                    ? 'bg-[#C5143D] text-white hover:bg-[#F2F2F2] hover:text-[#C5143D] cursor-pointer'
+                    : 'bg-[#F2F2F2] text-[#9ca3af] cursor-not-allowed'
+                }`}
+                style={{ borderRadius: '0px' }}
+              >
+                Continue <ArrowRight size={13} />
+              </button>
+            )}
+            {/* Setup step → Create */}
+            {isSetupStep && (
+              <button
+                onClick={handleCreate}
+                disabled={!canCreate}
+                className={`px-[40px] py-[8px] text-[14px] flex items-center gap-1.5 transition-all duration-200 ${
+                  canCreate
                     ? 'bg-[#C5143D] text-white hover:bg-[#F2F2F2] hover:text-[#C5143D] cursor-pointer'
                     : 'bg-[#F2F2F2] text-[#9ca3af] cursor-not-allowed'
                 }`}
@@ -1575,33 +1833,6 @@ function QuickPreviewPanel({ item, onClose, onViewCanvas, onEdit }: {
 type ComponentSubType = 'contract' | 'component-group' | 'component';
 type CreateStep = 1 | 2 | 3;
 
-const riskCodes = [
-  { id: '1', name: '1: AVIATION HULL AND LIAB INCL WAR EXCL WRO NO PROPOR RI' },
-  { id: '1E', name: '1E: OVERSEAS LEG TERRORISM ENERGY OFFSHORE PROPERTY' },
-  { id: '1T', name: '1T: OVERSEAS LEG TERRORISM ACCIDENT AND HEALTH' },
-  { id: '2', name: '2: AVIATION HULL AND LIAB INCL WAR EXCL WRO NO PROPOR RI' },
-];
-
-const cobOptions = [
-  'Marine Hull',
-  'Marine Cargo',
-  'Aviation',
-  'Property',
-  'Casualty',
-  'Energy',
-  'Political Risk',
-];
-
-const jurisdictionOptions = ['UK', 'US', 'EU', 'Singapore', 'Global'];
-
-const mrgOptions = [
-  'MRG-Standard',
-  'MRG-Marine',
-  'MRG-Cargo',
-  'MRG-Aviation',
-  'MRG-Property',
-];
-
 const OBJECT_TYPE_OPTIONS: { value: ComponentSubType; label: string }[] = [
   { value: 'contract', label: 'Contract' },
   { value: 'component-group', label: 'Component Group' },
@@ -1696,6 +1927,9 @@ function CreateComponentDialog({ onClose, onCreate }: {
       usedIn: [],
       format: objectFormat === 'analog' ? 'analogue' : 'digital',
       fileUrl: isAnalog && uploadedFile ? URL.createObjectURL(uploadedFile) : undefined,
+      riskCodes: selectedRiskCodes.length > 0 ? selectedRiskCodes : undefined,
+      jurisdictions: selectedJurisdictions.length > 0 ? selectedJurisdictions : undefined,
+      wolPublicationNotes: wolPublicationNotes.trim() || undefined,
     };
     onCreate(newItem);
   };

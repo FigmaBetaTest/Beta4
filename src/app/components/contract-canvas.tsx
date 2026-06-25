@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo, type ReactNode } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router';
 import { ChevronRight, ChevronDown, Edit3, ArrowLeft, FileText, Plus, X, Search, Layers, Package, GripVertical, Trash2, Save, SendHorizonal, Settings2, ToggleLeft, ToggleRight, Zap, Variable, Trash, AlertTriangle, Code, Info, Send } from 'lucide-react';
-import { contractSections, componentGroupSections, componentSections, repositoryItems, dynamicRepositoryItems, dataElements, sectionsByItemId, paragraphsByItemId, getSubComponentsForItem, type ContractSection, type DataElement } from './mock-data';
+import { contractSections, componentGroupSections, componentSections, repositoryItems, dynamicRepositoryItems, dataElements, sectionsByItemId, paragraphsByItemId, getSubComponentsForItem, riskCodes, cobOptions, jurisdictionOptions, type ContractSection, type DataElement } from './mock-data';
 import { VariationBadges, OptionalBadge, TypeBadge, StatusBadge, VersionDropdown } from './type-badge';
 import { MetaKV } from './meta-kv';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
@@ -483,6 +483,7 @@ export function ContractCanvas() {
 
       <div className="flex flex-1 overflow-hidden">
         {contract.format === 'analogue' ? (
+          <>
           <div className="flex-1 flex flex-col bg-[#FAFAFA]">
             <div className="flex flex-col items-center justify-center flex-1 gap-3 p-12 text-center">
               <FileText size={40} className="text-[#d1d5db]" />
@@ -492,6 +493,19 @@ export function ContractCanvas() {
               </p>
             </div>
           </div>
+          <ConditionsPanel
+            sections={sections}
+            selectedBlockId={selectedBlockId}
+            onSelectBlock={setSelectedBlockId}
+            conditionRules={conditionRules}
+            onUpdateCondition={handleUpdateCondition}
+            contract={contract}
+            conditionsEnabledPerBlock={conditionsEnabledPerBlock}
+            setConditionsEnabledPerBlock={setConditionsEnabledPerBlock}
+            conditionsCodePerBlock={conditionsCodePerBlock}
+            setConditionsCodePerBlock={setConditionsCodePerBlock}
+          />
+          </>
         ) : (<>
         {/* TOC Nav — fixed left */}
         <div className={`border-r border-[#d1d5db] bg-[#FAFAFA] overflow-y-auto transition-all shrink-0 ${tocCollapsed ? 'w-[40px] min-w-[40px]' : 'w-[280px] min-w-[280px]'}`}>
@@ -1457,7 +1471,24 @@ function ConditionsPanel({ sections, selectedBlockId, onSelectBlock, conditionRu
   conditionsCodePerBlock: Record<string, string>;
   setConditionsCodePerBlock: React.Dispatch<React.SetStateAction<Record<string, string>>>;
 }) {
-  const [activeTab, setActiveTab] = useState<RightPanelTab>('conditions');
+  const isAnalogue = contract.format === 'analogue';
+  const [activeTab, setActiveTab] = useState<RightPanelTab>(isAnalogue ? 'metadata' : 'conditions');
+
+  // Descriptive Metadata fields (inline-editable)
+  const [dmRiskCodes, setDmRiskCodes] = useState<string[]>(contract.riskCodes ?? []);
+  const [dmCob, setDmCob] = useState(contract.classOfBusiness ?? '');
+  const [dmJurisdictions, setDmJurisdictions] = useState<string[]>(
+    contract.jurisdictions ?? (contract.jurisdiction ? contract.jurisdiction.split(', ').filter(Boolean) : [])
+  );
+  const [dmWolNotes, setDmWolNotes] = useState(contract.wolPublicationNotes ?? '');
+
+  const saveDmFields = () => {
+    contract.riskCodes = dmRiskCodes.length > 0 ? dmRiskCodes : undefined;
+    contract.classOfBusiness = dmCob;
+    contract.jurisdictions = dmJurisdictions.length > 0 ? dmJurisdictions : undefined;
+    contract.jurisdiction = dmJurisdictions.join(', ');
+    contract.wolPublicationNotes = dmWolNotes.trim() || undefined;
+  };
 
   const conditionCount = Object.keys(conditionsEnabledPerBlock).filter(k => conditionsEnabledPerBlock[k]).length;
 
@@ -1500,11 +1531,16 @@ function ConditionsPanel({ sections, selectedBlockId, onSelectBlock, conditionRu
     { key: 'metadata', label: 'Metadata', icon: <Info size={12} /> },
   ];
 
+  const visibleTabs = contract.format === 'analogue'
+    ? tabs.filter(t => t.key === 'metadata')
+    : tabs;
+
   return (
     <div className="w-[310px] min-w-[310px] bg-[#FAFAFA] border-l border-[#d1d5db] overflow-y-auto flex flex-col" style={{ fontFamily: 'var(--font-family)' }}>
-      {/* Tab Bar */}
+      {/* Tab Bar — hidden for analogue (single tab) */}
+      {visibleTabs.length > 1 && (
       <div className="flex border-b border-[#d1d5db] bg-[#FAFAFA]">
-        {tabs.map(tab => (
+        {visibleTabs.map(tab => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
@@ -1525,6 +1561,7 @@ function ConditionsPanel({ sections, selectedBlockId, onSelectBlock, conditionRu
           </button>
         ))}
       </div>
+      )}
 
       {/* Conditions Tab */}
       {activeTab === 'conditions' && (
@@ -1651,13 +1688,10 @@ function ConditionsPanel({ sections, selectedBlockId, onSelectBlock, conditionRu
           {/* Header */}
           <div className="p-4 border-b border-[#d1d5db]">
             <h4 className="text-[15px] text-[#1F1F1F] mb-2">{contract.name}</h4>
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex items-center gap-2">
               <TypeBadge type={contract.type} />
               <StatusBadge status={contract.status} />
             </div>
-            <p className="text-[12px] text-[#6b7280]" style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-              {contract.description}
-            </p>
           </div>
 
           {/* System Attributes */}
@@ -1673,20 +1707,114 @@ function ConditionsPanel({ sections, selectedBlockId, onSelectBlock, conditionRu
                 </span>
               } />
               <MetaSysRow label="Created At" value={metaFormatDate(contract.lastModified)} />
-              <MetaSysRow label="Jurisdiction" value={contract.jurisdiction} />
-              <MetaSysRow label="Class" value={contract.classOfBusiness} />
               <MetaSysRow label="Last Modified" value={metaFormatDate(contract.lastModified)} />
               {contract.source && <MetaSysRow label="Source" value={contract.source} />}
             </div>
           </div>
 
-          {/* Canvas Statistics */}
+          {/* Descriptive Metadata (inline-editable) */}
           <div className="px-4 py-3 border-b border-[#d1d5db]">
-            <p className="text-[10px] uppercase tracking-wider text-[#9ca3af] mb-2">Canvas Statistics</p>
-            <div className="space-y-0">
-              <MetaSysRow label="Sections" value={String(sections.length)} />
-              <MetaSysRow label="Total Clauses" value={String(sections.reduce((sum, s) => sum + (s.children?.length ?? 0), 0))} />
-              <MetaSysRow label="Conditions" value={String(conditionCount)} />
+            <p className="text-[10px] uppercase tracking-wider text-[#9ca3af] mb-3">Descriptive Metadata</p>
+            <div className="space-y-3">
+              {/* Risk Code */}
+              <div>
+                <p className="text-[10px] text-[#9ca3af] mb-1" style={{ fontFamily: 'var(--font-family)' }}>Risk Code</p>
+                {dmRiskCodes.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mb-1.5">
+                    {dmRiskCodes.map(rc => (
+                      <span key={rc} className="flex items-center gap-0.5 px-1.5 py-0.5 text-[11px] bg-[#F2F2F2] border border-[#d1d5db] text-[#1F1F1F]" style={{ fontFamily: 'var(--font-family)' }}>
+                        {rc}
+                        <button
+                          onClick={() => { setDmRiskCodes(dmRiskCodes.filter(x => x !== rc)); saveDmFields(); }}
+                          className="ml-0.5 text-[#9ca3af] hover:text-[#C5143D] leading-none"
+                        >&times;</button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+                <select
+                  value=""
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    if (v && !dmRiskCodes.includes(v)) {
+                      const next = [...dmRiskCodes, v];
+                      setDmRiskCodes(next);
+                      contract.riskCodes = next;
+                    }
+                  }}
+                  className="w-full text-[12px] border border-[#d1d5db] px-2 py-1 bg-white text-[#6b7280] outline-none focus:border-[#2563eb]"
+                  style={{ borderRadius: 0, fontFamily: 'var(--font-family)' }}
+                >
+                  <option value="">+ Add risk code</option>
+                  {riskCodes.filter(rc => !dmRiskCodes.includes(rc.id)).map(rc => (
+                    <option key={rc.id} value={rc.id}>{rc.id}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Class of Business */}
+              <div>
+                <p className="text-[10px] text-[#9ca3af] mb-1" style={{ fontFamily: 'var(--font-family)' }}>Class of Business</p>
+                <select
+                  value={dmCob}
+                  onChange={(e) => { setDmCob(e.target.value); contract.classOfBusiness = e.target.value; }}
+                  className="w-full text-[12px] border border-[#d1d5db] px-2 py-1 bg-white text-[#1F1F1F] outline-none focus:border-[#2563eb]"
+                  style={{ borderRadius: 0, fontFamily: 'var(--font-family)' }}
+                >
+                  <option value="">—</option>
+                  {cobOptions.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+
+              {/* Jurisdiction */}
+              <div>
+                <p className="text-[10px] text-[#9ca3af] mb-1" style={{ fontFamily: 'var(--font-family)' }}>Jurisdiction</p>
+                {dmJurisdictions.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mb-1.5">
+                    {dmJurisdictions.map(j => (
+                      <span key={j} className="flex items-center gap-0.5 px-1.5 py-0.5 text-[11px] bg-[#F2F2F2] border border-[#d1d5db] text-[#1F1F1F]" style={{ fontFamily: 'var(--font-family)' }}>
+                        {j}
+                        <button
+                          onClick={() => { const next = dmJurisdictions.filter(x => x !== j); setDmJurisdictions(next); contract.jurisdictions = next; contract.jurisdiction = next.join(', '); }}
+                          className="ml-0.5 text-[#9ca3af] hover:text-[#C5143D] leading-none"
+                        >&times;</button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+                <select
+                  value=""
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    if (v && !dmJurisdictions.includes(v)) {
+                      const next = [...dmJurisdictions, v];
+                      setDmJurisdictions(next);
+                      contract.jurisdictions = next;
+                      contract.jurisdiction = next.join(', ');
+                    }
+                  }}
+                  className="w-full text-[12px] border border-[#d1d5db] px-2 py-1 bg-white text-[#6b7280] outline-none focus:border-[#2563eb]"
+                  style={{ borderRadius: 0, fontFamily: 'var(--font-family)' }}
+                >
+                  <option value="">+ Add jurisdiction</option>
+                  {jurisdictionOptions.filter(j => !dmJurisdictions.includes(j)).map(j => (
+                    <option key={j} value={j}>{j}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* WOL Publication Notes */}
+              <div>
+                <p className="text-[10px] text-[#9ca3af] mb-1" style={{ fontFamily: 'var(--font-family)' }}>WOL Publication Notes</p>
+                <textarea
+                  value={dmWolNotes}
+                  onChange={(e) => { setDmWolNotes(e.target.value); contract.wolPublicationNotes = e.target.value.trim() || undefined; }}
+                  rows={3}
+                  placeholder="Optional notes..."
+                  className="w-full text-[12px] border border-[#d1d5db] px-2 py-1.5 bg-white text-[#1F1F1F] outline-none focus:border-[#2563eb] resize-none"
+                  style={{ borderRadius: 0, fontFamily: 'var(--font-family)', lineHeight: '1.5' }}
+                />
+              </div>
             </div>
           </div>
 

@@ -348,7 +348,7 @@ const SCHEMA_JSON = JSON.stringify({
         properties: {
           id: { type: "string" },
           name: { type: "string" },
-          type: { type: "string", enum: ["DEF", "GV", "LOV", "TEC", "SYS", "ATT"] },
+          type: { type: "string", enum: ["DEF", "VAR", "LOV", "TEC", "SYS", "ATT"] },
           status: { type: "string", enum: ["DRAFT", "PENDING_APPROVAL", "ACTIVE", "ARCHIVED", "WITHDRAWN"] },
           version: { type: "string" },
           body: { type: "string" },

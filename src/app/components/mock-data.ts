@@ -1,11 +1,11 @@
 export type ItemType = 'Contract' | 'Component-Group' | 'Component';
 export type ItemStatus = 'DRAFT' | 'PENDING_APPROVAL' | 'ACTIVE' | 'ARCHIVED' | 'WITHDRAWN';
 
-export type FoundationType = 'DEF' | 'GV' | 'LOV' | 'TEC' | 'SYS' | 'ATT';
+export type FoundationType = 'DEF' | 'VAR' | 'LOV' | 'TEC' | 'SYS' | 'ATT';
 
 export const foundationTypeLabels: Record<FoundationType, string> = {
   DEF: 'Definition',
-  GV: 'Governing Variable',
+  VAR: 'Variable',
   LOV: 'List of Values',
   TEC: 'Technical Guidance',
   SYS: 'System Guidance',
@@ -47,6 +47,11 @@ export interface FoundationItem {
   dmApplicability?: string[];
   // GV System Guidance
   systemGuidanceMode?: 'none' | 'embedded' | 'linked';
+  // Descriptive Metadata (from creation setup)
+  riskCodes?: string[];
+  cob?: string;
+  jurisdictions?: string[];
+  wolPublicationNotes?: string;
 }
 
 export const foundationItems: FoundationItem[] = [
@@ -61,13 +66,13 @@ export const foundationItems: FoundationItem[] = [
     segment: 'Marine Hull',
     usages: 14,
     body: 'The vessel described in the Schedule, including any machinery, gear, equipment and outfits, bunkers, stores and provisions, owned or for the account of the Assured.',
-    crossReferences: ['GV: Vessel IMO Number', 'LOV: Vessel Categories'],
+    crossReferences: ['VAR: Vessel IMO Number', 'LOV: Vessel Categories'],
     usedIn: ['ctr-001'],
   },
   {
     id: 'gv-001',
     name: 'Notice Days',
-    type: 'GV',
+    type: 'VAR',
     status: 'ACTIVE',
     version: '1.1.0',
     lastModified: '2026-01-15',
@@ -135,13 +140,13 @@ export const foundationItems: FoundationItem[] = [
     segment: 'Marine Hull',
     usages: 11,
     body: 'The geographical limits within which the insured vessel is permitted to operate, as specified in the policy schedule and any applicable Institute Warranty Limits.',
-    crossReferences: ['GV: Navigation Limits Exception', 'LOV: Trading Area Codes'],
+    crossReferences: ['VAR: Navigation Limits Exception', 'LOV: Trading Area Codes'],
     usedIn: ['ctr-001', 'cg-001'],
   },
   {
     id: 'gv-002',
     name: 'Cancellation Notice Period',
-    type: 'GV',
+    type: 'VAR',
     status: 'ACTIVE',
     version: '1.0.0',
     lastModified: '2026-03-02',
@@ -312,6 +317,10 @@ export interface RepositoryItem {
   source?: string;
   format?: 'digital' | 'analogue';
   fileUrl?: string;
+  // Descriptive Metadata (from creation setup)
+  riskCodes?: string[];
+  jurisdictions?: string[];
+  wolPublicationNotes?: string;
 }
 
 export const repositoryItems: RepositoryItem[] = [
@@ -345,10 +354,34 @@ export const repositoryItems: RepositoryItem[] = [
   { id: 'cmp-022', name: 'C Crew Competency Warranty', type: 'Component', status: 'ACTIVE', classOfBusiness: 'Marine Hull', version: '1.1.0', lastModified: '2026-03-15', owner: 'A. Lloyd', jurisdiction: 'UK', description: 'Requires minimum competency and certification standards for crew.', usedIn: ['cg-001'], format: 'digital' },
   { id: 'cmp-023', name: 'C Survey Requirement Trigger', type: 'Component', status: 'DRAFT', classOfBusiness: 'Marine Hull', version: '0.4.0', lastModified: '2026-03-31', owner: 'R. Pyke', jurisdiction: 'UK', description: 'Defines triggers for mandatory condition surveys after incidents.', usedIn: ['cg-001'], format: 'digital' },
   { id: 'cmp-024', name: 'C Sanctions Reinstatement Condition', type: 'Component', status: 'PENDING_APPROVAL', classOfBusiness: 'Marine Hull', version: '0.6.0', lastModified: '2026-03-26', owner: 'C. Wise', jurisdiction: 'UK', description: 'Specifies preconditions for reinstating cover after sanctions suspension.', usedIn: ['cg-001', 'ctr-001'], format: 'digital' },
+  // Analogue examples — one per object type
+  { id: 'ctr-ana-001', name: 'LMA 5402 Marine Hull Policy', type: 'Contract', status: 'ACTIVE', classOfBusiness: 'Marine Hull', version: '2.0.0', lastModified: '2026-01-15', owner: 'R. Pyke', jurisdiction: 'UK', description: 'Legacy analogue contract wording scanned from original LMA 5402 document.', usedIn: [], format: 'analogue' },
+  { id: 'cg-ana-001', name: 'Standard War Perils Group (Legacy)', type: 'Component-Group', status: 'ACTIVE', classOfBusiness: 'Marine Hull', version: '1.0.0', lastModified: '2025-11-30', owner: 'C. Wise', jurisdiction: 'UK', description: 'Analogue component group covering standard war peril clauses from pre-digitalisation archive.', usedIn: ['ctr-ana-001'], format: 'analogue' },
+  { id: 'cmp-ana-001', name: 'C Institute War Clauses (Hulls)', type: 'Component', status: 'ACTIVE', classOfBusiness: 'Marine Hull', version: '1.0.0', lastModified: '2025-10-22', owner: 'A. Lloyd', jurisdiction: 'UK', description: 'Scanned analogue version of the Institute War Clauses (Hulls) 1/10/83 standard wording.', usedIn: ['cg-ana-001', 'ctr-ana-001'], format: 'analogue' },
 ];
 
 // Mutable in-memory store for items created at runtime (persists across route changes within the session)
 export const dynamicRepositoryItems: RepositoryItem[] = [];
+
+// Shared descriptor metadata options (used in creation dialogs and editors)
+export const riskCodes = [
+  { id: '1', name: '1: AVIATION HULL AND LIAB INCL WAR EXCL WRO NO PROPOR RI' },
+  { id: '1E', name: '1E: OVERSEAS LEG TERRORISM ENERGY OFFSHORE PROPERTY' },
+  { id: '1T', name: '1T: OVERSEAS LEG TERRORISM ACCIDENT AND HEALTH' },
+  { id: '2', name: '2: AVIATION HULL AND LIAB INCL WAR EXCL WRO NO PROPOR RI' },
+];
+
+export const cobOptions = [
+  'Marine Hull',
+  'Marine Cargo',
+  'Aviation',
+  'Property',
+  'Casualty',
+  'Energy',
+  'Political Risk',
+];
+
+export const jurisdictionOptions = ['UK', 'US', 'EU', 'Singapore', 'Global'];
 
 // Mutable in-memory store for editor paragraph content (keyed by component id)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

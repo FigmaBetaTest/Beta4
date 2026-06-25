@@ -5,7 +5,7 @@ import {
   AlignLeft, AlignCenter, AlignRight,
   ListOrdered, List, ChevronDown, Edit3,
 } from 'lucide-react';
-import { foundationTypeLabels, dynamicFoundationItems, type FoundationType } from './mock-data';
+import { foundationTypeLabels, dynamicFoundationItems, riskCodes, cobOptions, jurisdictionOptions, type FoundationType } from './mock-data';
 import { StatusBadge } from './type-badge';
 import { ConditionCodeEditor } from './condition-code-editor';
 import { toast } from 'sonner';
@@ -93,7 +93,7 @@ function RichTextFieldHeader() {
 
 const BODY_LABELS: Record<FoundationType, string> = {
   DEF: 'Definition Text',
-  GV: 'Variable Expression',
+  VAR: 'Variable Expression',
   LOV: 'Values',
   ATT: 'Metadata Description',
   TEC: 'Technical Content',
@@ -102,7 +102,7 @@ const BODY_LABELS: Record<FoundationType, string> = {
 
 const TITLE_PLACEHOLDERS: Record<FoundationType, string> = {
   DEF: 'e.g. Total Loss, Named Insured, Deductible...',
-  GV: 'e.g. Coverage Limit, Deductible Amount...',
+  VAR: 'e.g. Coverage Limit, Deductible Amount...',
   LOV: 'e.g. Permitted Vessel Types, Coverage Classes...',
   ATT: 'e.g. Risk Classification, Segment Attributes...',
   TEC: 'e.g. Drafting Guidelines, Clause Numbering Rules...',
@@ -111,7 +111,7 @@ const TITLE_PLACEHOLDERS: Record<FoundationType, string> = {
 
 const BODY_PLACEHOLDERS: Record<FoundationType, string> = {
   DEF: 'Enter the definition text. Describe the term clearly and concisely as it applies across contracts...',
-  GV: 'Enter the variable expression or formula. Use {{VARIABLE_NAME}} syntax to reference data elements...',
+  VAR: 'Enter the variable expression or formula. Use {{VARIABLE_NAME}} syntax to reference data elements...',
   LOV: 'Enter each permitted value on a new line, or as a comma-separated list...',
   ATT: 'Describe the metadata attributes and their meaning for this object type...',
   TEC: 'Enter technical guidance, drafting notes, or system-level instructions...',
@@ -162,6 +162,12 @@ export function FoundationEditor() {
   const [dmDescription, setDmDescription] = useState(existingItem?.body ?? '');
   const [dmWolExpression, setDmWolExpression] = useState(existingItem?.wolExpression ?? '');
 
+  // Descriptive Metadata fields (from creation setup)
+  const [dmRiskCodes, setDmRiskCodes] = useState<string[]>(existingItem?.riskCodes ?? []);
+  const [dmCob, setDmCob] = useState(existingItem?.cob ?? existingItem?.segment ?? '');
+  const [dmJurisdictions, setDmJurisdictions] = useState<string[]>(existingItem?.jurisdictions ?? []);
+  const [dmWolNotes, setDmWolNotes] = useState(existingItem?.wolPublicationNotes ?? '');
+
   useEffect(() => {
     if (!showApplicabilityDropdown) return;
     const handleClickOutside = (e: MouseEvent) => {
@@ -190,7 +196,7 @@ export function FoundationEditor() {
   };
 
   const buildFields = () => {
-    const gvFields = itemType === 'GV' ? {
+    const gvFields = itemType === 'VAR' ? {
       question: gvQuestion || undefined,
       valueType: gvType || undefined,
       listSource: gvTypespecifica || undefined,
@@ -209,7 +215,13 @@ export function FoundationEditor() {
       : (itemType === 'DEF' || itemType === 'LOV')
         ? { body: body || undefined }
         : {};
-    return { ...gvFields, ...dmFields, ...bodyFields };
+    const descriptiveFields = {
+      riskCodes: dmRiskCodes.length > 0 ? dmRiskCodes : undefined,
+      cob: dmCob || undefined,
+      jurisdictions: dmJurisdictions.length > 0 ? dmJurisdictions : undefined,
+      wolPublicationNotes: dmWolNotes.trim() || undefined,
+    };
+    return { ...gvFields, ...dmFields, ...bodyFields, ...descriptiveFields };
   };
 
   const handleSave = () => {
@@ -279,6 +291,19 @@ export function FoundationEditor() {
   const activeInputStyle = isViewMode ? inputViewStyle : inputStyle;
   const labelStyle = 'text-[12px] text-[#6b7280] mb-1.5 block';
 
+  const formatDate = (iso: string) => {
+    try {
+      return new Date(iso).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    } catch { return iso; }
+  };
+
+  const SysRow = ({ label, value }: { label: string; value: React.ReactNode }) => (
+    <div className="flex items-start gap-2 py-1.5 border-b border-[#f3f4f6] last:border-0">
+      <span className="text-[11px] text-[#9ca3af] shrink-0" style={{ width: '100px' }}>{label}</span>
+      <span className="text-[12px] text-[#1F1F1F] flex-1 break-all">{value}</span>
+    </div>
+  );
+
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {/* Header */}
@@ -342,8 +367,10 @@ export function FoundationEditor() {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto bg-white">
-        <div className="max-w-[620px] mx-auto py-12 px-6">
+      <div className="flex-1 min-h-0 flex overflow-hidden bg-white">
+        {/* Main form */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="max-w-[620px] mx-auto py-12 px-6">
           <h2
             className="text-[18px] text-[#1F1F1F] mb-8"
             style={{ fontFamily: 'var(--font-family)', fontWeight: 400 }}
@@ -374,7 +401,7 @@ export function FoundationEditor() {
               />
             </div>
 
-            {itemType === 'GV' ? (
+            {itemType === 'VAR' ? (
               /* GV-specific fields */
               <>
                 {/* Question or Statement */}
@@ -436,7 +463,7 @@ export function FoundationEditor() {
                   <ConditionCodeEditor
                     value={gvWolExpression}
                     onChange={(v) => { if (!isViewMode) { setGvWolExpression(v); setIsDirty(true); } }}
-                    headerLabel="GOVERNING-VARIABLE.WOL"
+                    headerLabel="VARIABLE.WOL"
                     minHeight="120px"
                   />
                 </div>
@@ -635,6 +662,144 @@ export function FoundationEditor() {
                 />
               </div>
             )}
+          </div>
+        </div>
+        </div>
+
+        {/* Metadata side panel */}
+        <div className="w-[280px] min-w-[280px] border-l border-[#d1d5db] bg-[#FAFAFA] flex flex-col overflow-hidden">
+          {/* Panel body */}
+          <div className="flex-1 overflow-y-auto" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+            {/* Name + badges */}
+            <div className="px-4 pt-4 pb-3 border-b border-[#d1d5db]">
+              <h4 className="text-[13px] font-semibold text-[#1F1F1F] mb-1.5 truncate">{displayTitle}</h4>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="px-1.5 py-0.5 text-[11px] font-mono bg-[#F2F2F2] text-[#6b7280] border border-[#d1d5db]">{itemType}</span>
+                <StatusBadge status={itemStatus} />
+              </div>
+            </div>
+
+            {/* System Metadata */}
+            <div className="px-4 py-3 border-b border-[#d1d5db]">
+              <p className="text-[10px] uppercase tracking-wider text-[#9ca3af] mb-2">System Metadata</p>
+              <div className="space-y-0">
+                <SysRow label="ID" value={existingItem?.id ?? '—'} />
+                <SysRow label="Version" value={existingItem?.version ?? '0.1.0'} />
+                <SysRow label="Type" value={foundationTypeLabels[itemType]} />
+                <SysRow label="Last Modified" value={existingItem ? formatDate(existingItem.lastModified) : '—'} />
+                <SysRow label="Owner" value={existingItem?.owner ?? 'R. Pyke'} />
+                <SysRow label="Usages" value={String(existingItem?.usages ?? 0)} />
+              </div>
+            </div>
+
+            {/* Descriptive Metadata */}
+            <div className="px-4 py-3">
+              <p className="text-[10px] uppercase tracking-wider text-[#9ca3af] mb-3">Descriptive Metadata</p>
+              <div className="space-y-3">
+                {/* Risk Code */}
+                <div>
+                  <p className="text-[10px] text-[#9ca3af] mb-1" style={{ fontFamily: 'var(--font-family)' }}>Risk Code</p>
+                  {dmRiskCodes.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mb-1.5">
+                      {dmRiskCodes.map(rc => (
+                        <span key={rc} className="flex items-center gap-0.5 px-1.5 py-0.5 text-[11px] bg-[#F2F2F2] border border-[#d1d5db] text-[#1F1F1F]" style={{ fontFamily: 'var(--font-family)' }}>
+                          {rc}
+                          {!isViewMode && (
+                            <button onClick={() => { setDmRiskCodes(prev => prev.filter(x => x !== rc)); setIsDirty(true); }} className="ml-0.5 text-[#9ca3af] hover:text-[#C5143D] leading-none">&times;</button>
+                          )}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {!isViewMode && (
+                    <select
+                      value=""
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        if (v && !dmRiskCodes.includes(v)) { setDmRiskCodes(prev => [...prev, v]); setIsDirty(true); }
+                      }}
+                      className="w-full text-[12px] border border-[#d1d5db] px-2 py-1 bg-white text-[#6b7280] outline-none focus:border-[#2563eb]"
+                      style={{ borderRadius: 0, fontFamily: 'var(--font-family)' }}
+                    >
+                      <option value="">+ Add risk code</option>
+                      {riskCodes.filter(rc => !dmRiskCodes.includes(rc.id)).map(rc => (
+                        <option key={rc.id} value={rc.id}>{rc.id}</option>
+                      ))}
+                    </select>
+                  )}
+                  {isViewMode && dmRiskCodes.length === 0 && <span className="text-[12px] text-[#9ca3af]">—</span>}
+                </div>
+
+                {/* Class of Business */}
+                <div>
+                  <p className="text-[10px] text-[#9ca3af] mb-1" style={{ fontFamily: 'var(--font-family)' }}>Class of Business</p>
+                  {isViewMode ? (
+                    <span className="text-[12px] text-[#1F1F1F]" style={{ fontFamily: 'var(--font-family)' }}>{dmCob || '—'}</span>
+                  ) : (
+                    <select
+                      value={dmCob}
+                      onChange={(e) => { setDmCob(e.target.value); setIsDirty(true); }}
+                      className="w-full text-[12px] border border-[#d1d5db] px-2 py-1 bg-white text-[#1F1F1F] outline-none focus:border-[#2563eb]"
+                      style={{ borderRadius: 0, fontFamily: 'var(--font-family)' }}
+                    >
+                      <option value="">—</option>
+                      {cobOptions.map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                  )}
+                </div>
+
+                {/* Jurisdiction */}
+                <div>
+                  <p className="text-[10px] text-[#9ca3af] mb-1" style={{ fontFamily: 'var(--font-family)' }}>Jurisdiction</p>
+                  {dmJurisdictions.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mb-1.5">
+                      {dmJurisdictions.map(j => (
+                        <span key={j} className="flex items-center gap-0.5 px-1.5 py-0.5 text-[11px] bg-[#F2F2F2] border border-[#d1d5db] text-[#1F1F1F]" style={{ fontFamily: 'var(--font-family)' }}>
+                          {j}
+                          {!isViewMode && (
+                            <button onClick={() => { setDmJurisdictions(prev => prev.filter(x => x !== j)); setIsDirty(true); }} className="ml-0.5 text-[#9ca3af] hover:text-[#C5143D] leading-none">&times;</button>
+                          )}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {!isViewMode && (
+                    <select
+                      value=""
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        if (v && !dmJurisdictions.includes(v)) { setDmJurisdictions(prev => [...prev, v]); setIsDirty(true); }
+                      }}
+                      className="w-full text-[12px] border border-[#d1d5db] px-2 py-1 bg-white text-[#6b7280] outline-none focus:border-[#2563eb]"
+                      style={{ borderRadius: 0, fontFamily: 'var(--font-family)' }}
+                    >
+                      <option value="">+ Add jurisdiction</option>
+                      {jurisdictionOptions.filter(j => !dmJurisdictions.includes(j)).map(j => (
+                        <option key={j} value={j}>{j}</option>
+                      ))}
+                    </select>
+                  )}
+                  {isViewMode && dmJurisdictions.length === 0 && <span className="text-[12px] text-[#9ca3af]">—</span>}
+                </div>
+
+                {/* WOL Publication Notes */}
+                <div>
+                  <p className="text-[10px] text-[#9ca3af] mb-1" style={{ fontFamily: 'var(--font-family)' }}>WOL Publication Notes</p>
+                  {isViewMode ? (
+                    <span className="text-[12px] text-[#1F1F1F] whitespace-pre-wrap" style={{ fontFamily: 'var(--font-family)' }}>{dmWolNotes || '—'}</span>
+                  ) : (
+                    <textarea
+                      value={dmWolNotes}
+                      onChange={(e) => { setDmWolNotes(e.target.value); setIsDirty(true); }}
+                      rows={3}
+                      placeholder="Optional notes..."
+                      className="w-full text-[12px] border border-[#d1d5db] px-2 py-1.5 bg-white text-[#1F1F1F] outline-none focus:border-[#2563eb] resize-none"
+                      style={{ borderRadius: 0, fontFamily: 'var(--font-family)', lineHeight: '1.5' }}
+                    />
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

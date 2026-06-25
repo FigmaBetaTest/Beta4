@@ -6,7 +6,7 @@ import {
   Undo2, Redo2, AlignLeft, AlignCenter, AlignRight, ListOrdered, List,
   Type, Settings2, Table, Code, MoreHorizontal, Pencil, PanelLeft, PanelTop,
 } from 'lucide-react';
-import { repositoryItems, dynamicRepositoryItems, draftParagraphsStore, paragraphsByItemId, dataElements, referenceDefinitions, embeddedVariableEntries } from './mock-data';
+import { repositoryItems, dynamicRepositoryItems, draftParagraphsStore, paragraphsByItemId, dataElements, referenceDefinitions, embeddedVariableEntries, riskCodes, cobOptions, jurisdictionOptions } from './mock-data';
 import { TypeBadge, StatusBadge, VersionDropdown } from './type-badge';
 import { MetaKV } from './meta-kv';
 import { toast } from 'sonner';
@@ -49,6 +49,14 @@ export function ComponentEditor() {
   const [activeSidePanelTab, setActiveSidePanelTab] = useState<SidePanelTab>('settings');
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [showDynamicTableDialog, setShowDynamicTableDialog] = useState(false);
+
+  // Descriptive Metadata fields (from creation setup, inline-editable in panel)
+  const [dmRiskCodes, setDmRiskCodes] = useState<string[]>(component.riskCodes ?? []);
+  const [dmCob, setDmCob] = useState(component.classOfBusiness ?? '');
+  const [dmJurisdictions, setDmJurisdictions] = useState<string[]>(
+    component.jurisdictions ?? (component.jurisdiction ? component.jurisdiction.split(', ').filter(Boolean) : [])
+  );
+  const [dmWolNotes, setDmWolNotes] = useState(component.wolPublicationNotes ?? '');
   
   // C12.9 — Notice of non-renewal content (only for the C12.9 item, or any non-new item)
   const c129Paragraphs: ParagraphData[] = [
@@ -500,6 +508,12 @@ export function ComponentEditor() {
     if (id) {
       draftParagraphsStore[id] = paragraphs;
     }
+    // Persist DM fields to component object
+    component.riskCodes = dmRiskCodes.length > 0 ? dmRiskCodes : undefined;
+    component.classOfBusiness = dmCob;
+    component.jurisdictions = dmJurisdictions.length > 0 ? dmJurisdictions : undefined;
+    component.jurisdiction = dmJurisdictions.join(', ');
+    component.wolPublicationNotes = dmWolNotes.trim() || undefined;
     setIsDirty(false);
     toast.success('Component saved as Draft');
   };
@@ -656,7 +670,17 @@ export function ComponentEditor() {
           )}
 
           {activeSidePanelTab === 'metadata' && (
-            <EditorMetadataPanel component={component} />
+            <EditorMetadataPanel
+              component={component}
+              dmRiskCodes={dmRiskCodes}
+              setDmRiskCodes={(v) => { setDmRiskCodes(v); setIsDirty(true); }}
+              dmCob={dmCob}
+              setDmCob={(v) => { setDmCob(v); setIsDirty(true); }}
+              dmJurisdictions={dmJurisdictions}
+              setDmJurisdictions={(v) => { setDmJurisdictions(v); setIsDirty(true); }}
+              dmWolNotes={dmWolNotes}
+              setDmWolNotes={(v) => { setDmWolNotes(v); setIsDirty(true); }}
+            />
           )}
         </div>
       </div>
@@ -1636,7 +1660,27 @@ function UsageImpactPanel({ items }: { items: typeof repositoryItems }) {
   );
 }
 
-function EditorMetadataPanel({ component }: { component: typeof repositoryItems[0] }) {
+function EditorMetadataPanel({
+  component,
+  dmRiskCodes,
+  setDmRiskCodes,
+  dmCob,
+  setDmCob,
+  dmJurisdictions,
+  setDmJurisdictions,
+  dmWolNotes,
+  setDmWolNotes,
+}: {
+  component: typeof repositoryItems[0];
+  dmRiskCodes: string[];
+  setDmRiskCodes: (v: string[]) => void;
+  dmCob: string;
+  setDmCob: (v: string) => void;
+  dmJurisdictions: string[];
+  setDmJurisdictions: (v: string[]) => void;
+  dmWolNotes: string;
+  setDmWolNotes: (v: string) => void;
+}) {
 
   const typeToClass: Record<string, string> = {
     'Contract': 'CTR',
@@ -1672,8 +1716,6 @@ function EditorMetadataPanel({ component }: { component: typeof repositoryItems[
 
   // Extended / optional attributes
   const extended: [string, string][] = [
-    ['Jurisdiction', component.jurisdiction],
-    ['Class of Business', component.classOfBusiness],
     ['Owner', component.owner],
     ['Last Modified', formatDate(component.lastModified)],
     ...(component.source ? [['Source', component.source] as [string, string]] : []),
@@ -1698,7 +1740,7 @@ function EditorMetadataPanel({ component }: { component: typeof repositoryItems[
         </div>
       </div>
 
-      {/* Group 1: Systemattribute */}
+      {/* Group 1: System Attributes */}
       <div className="px-4 py-3 border-b border-[#d1d5db]">
         <p className="text-[10px] uppercase tracking-wider text-[#9ca3af] mb-2">System Attributes</p>
         <div className="space-y-0">
@@ -1714,6 +1756,97 @@ function EditorMetadataPanel({ component }: { component: typeof repositoryItems[
           {extended.map(([label, val]) => (
             <SysRow key={label} label={label} value={val} />
           ))}
+        </div>
+      </div>
+
+      {/* Group 2: Descriptive Metadata (inline-editable) */}
+      <div className="px-4 py-3">
+        <p className="text-[10px] uppercase tracking-wider text-[#9ca3af] mb-3">Descriptive Metadata</p>
+        <div className="space-y-3">
+          {/* Risk Code */}
+          <div>
+            <p className="text-[10px] text-[#9ca3af] mb-1" style={{ fontFamily: "'DM Sans', sans-serif" }}>Risk Code</p>
+            {dmRiskCodes.length > 0 && (
+              <div className="flex flex-wrap gap-1 mb-1.5">
+                {dmRiskCodes.map(rc => (
+                  <span key={rc} className="flex items-center gap-0.5 px-1.5 py-0.5 text-[11px] bg-[#F2F2F2] border border-[#d1d5db] text-[#1F1F1F]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                    {rc}
+                    <button onClick={() => setDmRiskCodes(dmRiskCodes.filter(x => x !== rc))} className="ml-0.5 text-[#9ca3af] hover:text-[#C5143D] leading-none">&times;</button>
+                  </span>
+                ))}
+              </div>
+            )}
+            <select
+              value=""
+              onChange={(e) => {
+                const v = e.target.value;
+                if (v && !dmRiskCodes.includes(v)) setDmRiskCodes([...dmRiskCodes, v]);
+              }}
+              className="w-full text-[12px] border border-[#d1d5db] px-2 py-1 bg-white text-[#6b7280] outline-none focus:border-[#2563eb]"
+              style={{ borderRadius: 0, fontFamily: "'DM Sans', sans-serif" }}
+            >
+              <option value="">+ Add risk code</option>
+              {riskCodes.filter(rc => !dmRiskCodes.includes(rc.id)).map(rc => (
+                <option key={rc.id} value={rc.id}>{rc.id}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Class of Business */}
+          <div>
+            <p className="text-[10px] text-[#9ca3af] mb-1" style={{ fontFamily: "'DM Sans', sans-serif" }}>Class of Business</p>
+            <select
+              value={dmCob}
+              onChange={(e) => setDmCob(e.target.value)}
+              className="w-full text-[12px] border border-[#d1d5db] px-2 py-1 bg-white text-[#1F1F1F] outline-none focus:border-[#2563eb]"
+              style={{ borderRadius: 0, fontFamily: "'DM Sans', sans-serif" }}
+            >
+              <option value="">—</option>
+              {cobOptions.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+
+          {/* Jurisdiction */}
+          <div>
+            <p className="text-[10px] text-[#9ca3af] mb-1" style={{ fontFamily: "'DM Sans', sans-serif" }}>Jurisdiction</p>
+            {dmJurisdictions.length > 0 && (
+              <div className="flex flex-wrap gap-1 mb-1.5">
+                {dmJurisdictions.map(j => (
+                  <span key={j} className="flex items-center gap-0.5 px-1.5 py-0.5 text-[11px] bg-[#F2F2F2] border border-[#d1d5db] text-[#1F1F1F]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                    {j}
+                    <button onClick={() => setDmJurisdictions(dmJurisdictions.filter(x => x !== j))} className="ml-0.5 text-[#9ca3af] hover:text-[#C5143D] leading-none">&times;</button>
+                  </span>
+                ))}
+              </div>
+            )}
+            <select
+              value=""
+              onChange={(e) => {
+                const v = e.target.value;
+                if (v && !dmJurisdictions.includes(v)) setDmJurisdictions([...dmJurisdictions, v]);
+              }}
+              className="w-full text-[12px] border border-[#d1d5db] px-2 py-1 bg-white text-[#6b7280] outline-none focus:border-[#2563eb]"
+              style={{ borderRadius: 0, fontFamily: "'DM Sans', sans-serif" }}
+            >
+              <option value="">+ Add jurisdiction</option>
+              {jurisdictionOptions.filter(j => !dmJurisdictions.includes(j)).map(j => (
+                <option key={j} value={j}>{j}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* WOL Publication Notes */}
+          <div>
+            <p className="text-[10px] text-[#9ca3af] mb-1" style={{ fontFamily: "'DM Sans', sans-serif" }}>WOL Publication Notes</p>
+            <textarea
+              value={dmWolNotes}
+              onChange={(e) => setDmWolNotes(e.target.value)}
+              rows={3}
+              placeholder="Optional notes..."
+              className="w-full text-[12px] border border-[#d1d5db] px-2 py-1.5 bg-white text-[#1F1F1F] outline-none focus:border-[#2563eb] resize-none"
+              style={{ borderRadius: 0, fontFamily: "'DM Sans', sans-serif", lineHeight: '1.5' }}
+            />
+          </div>
         </div>
       </div>
     </div>
