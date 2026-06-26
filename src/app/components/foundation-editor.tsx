@@ -162,6 +162,24 @@ export function FoundationEditor() {
   const [dmDescription, setDmDescription] = useState(existingItem?.body ?? '');
   const [dmWolExpression, setDmWolExpression] = useState(existingItem?.wolExpression ?? '');
 
+  // DEF-specific fields
+  const [defDefinedTerm, setDefDefinedTerm] = useState(existingItem?.definedTerm ?? '');
+  const [defAliases, setDefAliases] = useState<string[]>(existingItem?.aliases ?? []);
+  const [defAliasInput, setDefAliasInput] = useState('');
+  const aliasInputRef = useRef<HTMLInputElement>(null);
+
+  const handleAliasKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const val = defAliasInput.trim();
+      if (val && !defAliases.includes(val)) {
+        setDefAliases(prev => [...prev, val]);
+        setIsDirty(true);
+      }
+      setDefAliasInput('');
+    }
+  };
+
   // Descriptive Metadata fields (from creation setup)
   const [dmRiskCodes, setDmRiskCodes] = useState<string[]>(existingItem?.riskCodes ?? []);
   const [dmCob, setDmCob] = useState(existingItem?.cob ?? existingItem?.segment ?? '');
@@ -212,9 +230,15 @@ export function FoundationEditor() {
     } : {};
     const bodyFields = (itemType === 'TEC' || itemType === 'SYS')
       ? { summary: body || undefined }
-      : (itemType === 'DEF' || itemType === 'LOV')
+      : (itemType === 'LOV')
         ? { body: body || undefined }
-        : {};
+        : itemType === 'DEF'
+          ? {
+              body: body || undefined,
+              definedTerm: defDefinedTerm.trim() || undefined,
+              aliases: defAliases.length > 0 ? defAliases : undefined,
+            }
+          : {};
     const descriptiveFields = {
       riskCodes: dmRiskCodes.length > 0 ? dmRiskCodes : undefined,
       cob: dmCob || undefined,
@@ -246,7 +270,6 @@ export function FoundationEditor() {
     setIsDirty(false);
     setItemStatus('DRAFT');
     toast.success(`${typeLabel} saved as Draft`);
-    navigate(`/?tab=${targetTab}`);
   };
 
   const handleSubmit = () => {
@@ -300,7 +323,7 @@ export function FoundationEditor() {
   const SysRow = ({ label, value }: { label: string; value: React.ReactNode }) => (
     <div className="flex items-start gap-2 py-1.5 border-b border-[#f3f4f6] last:border-0">
       <span className="text-[11px] text-[#9ca3af] shrink-0" style={{ width: '100px' }}>{label}</span>
-      <span className="text-[12px] text-[#1F1F1F] flex-1 break-all">{value}</span>
+      <span className="text-[12px] text-[#1F1F1F] flex-1 truncate">{value}</span>
     </div>
   );
 
@@ -328,13 +351,6 @@ export function FoundationEditor() {
         <div className="flex items-center gap-3">
           {isViewMode ? (
             <>
-              <button
-                onClick={handleSubmit}
-                className="flex items-center gap-1.5 px-[40px] py-[8px] text-[14px] bg-[#C5143D] text-white hover:bg-[#F2F2F2] hover:text-[#C5143D] transition-all duration-200 cursor-pointer"
-                style={{ borderRadius: '0px' }}
-              >
-                <Send size={13} /> Submit
-              </button>
               <button
                 onClick={() => setIsViewMode(false)}
                 className="flex items-center gap-1.5 px-[40px] py-[8px] text-[14px] bg-[#F2F2F2] text-[#1F1F1F] hover:bg-white transition-all duration-200 cursor-pointer"
@@ -375,31 +391,65 @@ export function FoundationEditor() {
             className="text-[18px] text-[#1F1F1F] mb-8"
             style={{ fontFamily: 'var(--font-family)', fontWeight: 400 }}
           >
-            {isNew ? `Create New ${typeLabel}` : isViewMode ? `View ${typeLabel}` : `Edit ${typeLabel}`}
+            {isNew ? `Create New ${typeLabel}` : isViewMode ? `View ${itemType === 'ATT' ? 'Descriptive Metadata' : typeLabel}` : `Edit ${itemType === 'ATT' ? 'Descriptive Metadata' : typeLabel}`}
           </h2>
 
           <div className="space-y-5">
-            {/* Title */}
-            <div>
-              <label className={labelStyle} style={{ fontFamily: 'var(--font-family)' }}>
-                Title {!isViewMode && <span className="text-[#C5143D]">*</span>}
-              </label>
-              <input
-                type="text"
-                value={title}
-                onChange={(e) => {
-                  if (isViewMode) return;
-                  setTitle(e.target.value);
-                  setIsDirty(true);
-                  setIsValidated(false);
-                }}
-                readOnly={isViewMode}
-                placeholder={isViewMode ? '' : titlePlaceholder}
-                className={activeInputStyle}
-                style={{ borderRadius: '0px', fontFamily: 'var(--font-family)', fontSize: '14px' }}
-                autoFocus={!isViewMode}
-              />
-            </div>
+            {/* Title (+ Defined Term side-by-side for DEF) */}
+            {itemType === 'DEF' ? (
+              <div className="flex gap-4">
+                <div className="flex-1">
+                  <label className={labelStyle} style={{ fontFamily: 'var(--font-family)' }}>
+                    Title {!isViewMode && <span className="text-[#C5143D]">*</span>}
+                  </label>
+                  <input
+                    type="text"
+                    value={title}
+                    onChange={(e) => { if (!isViewMode) { setTitle(e.target.value); setIsDirty(true); setIsValidated(false); } }}
+                    readOnly={isViewMode}
+                    placeholder={isViewMode ? '' : titlePlaceholder}
+                    className={activeInputStyle}
+                    style={{ borderRadius: '0px', fontFamily: 'var(--font-family)', fontSize: '14px' }}
+                    autoFocus={!isViewMode}
+                  />
+                </div>
+                <div className="flex-1">
+                  <label className={labelStyle} style={{ fontFamily: 'var(--font-family)' }}>
+                    Defined Term {!isViewMode && <span className="text-[#C5143D]">*</span>}
+                  </label>
+                  <input
+                    type="text"
+                    value={defDefinedTerm}
+                    onChange={(e) => { if (!isViewMode) { setDefDefinedTerm(e.target.value); setIsDirty(true); } }}
+                    readOnly={isViewMode}
+                    placeholder={isViewMode ? '' : 'e.g. Coverholder'}
+                    className={activeInputStyle}
+                    style={{ borderRadius: '0px', fontFamily: 'var(--font-family)', fontSize: '14px' }}
+                  />
+                </div>
+              </div>
+            ) : (
+              <div>
+                <label className={labelStyle} style={{ fontFamily: 'var(--font-family)' }}>
+                  Title {!isViewMode && <span className="text-[#C5143D]">*</span>}
+                </label>
+                <input
+                  type="text"
+                  value={title}
+                  onChange={(e) => {
+                    if (isViewMode) return;
+                    setTitle(e.target.value);
+                    setIsDirty(true);
+                    setIsValidated(false);
+                  }}
+                  readOnly={isViewMode}
+                  placeholder={isViewMode ? '' : titlePlaceholder}
+                  className={activeInputStyle}
+                  style={{ borderRadius: '0px', fontFamily: 'var(--font-family)', fontSize: '14px' }}
+                  autoFocus={!isViewMode}
+                />
+              </div>
+            )}
 
             {itemType === 'VAR' ? (
               /* GV-specific fields */
@@ -632,13 +682,95 @@ export function FoundationEditor() {
                   />
                 </div>
               </>
+            ) : itemType === 'DEF' ? (
+              /* DEF-specific fields (Title + Defined Term already rendered above) */
+              <>
+                {/* Alias */}
+                <div>
+                  <label className={labelStyle} style={{ fontFamily: 'var(--font-family)' }}>Alias</label>
+                  {isViewMode ? (
+                    defAliases.length > 0 ? (
+                      <div className="flex flex-wrap gap-1.5">
+                        {defAliases.map(alias => (
+                          <span key={alias} className="px-2 py-0.5 text-[12px] bg-[#F2F2F2] border border-[#d1d5db] text-[#1F1F1F]" style={{ fontFamily: 'var(--font-family)' }}>{alias}</span>
+                        ))}
+                      </div>
+                    ) : <span className="text-[13px] text-[#9ca3af]">—</span>
+                  ) : (
+                    <div
+                      className={activeInputStyle + ' flex items-center gap-1.5 cursor-text'}
+                      style={{ borderRadius: '0px', fontFamily: 'var(--font-family)', fontSize: '14px', minHeight: '38px', padding: '4px 12px' }}
+                      onClick={() => aliasInputRef.current?.focus()}
+                    >
+                      <input
+                        ref={aliasInputRef}
+                        type="text"
+                        value={defAliasInput}
+                        onChange={(e) => setDefAliasInput(e.target.value)}
+                        onKeyDown={handleAliasKeyDown}
+                        placeholder={defAliases.length === 0 ? 'Type an alias and press Enter…' : ''}
+                        className="flex-1 min-w-0 bg-transparent outline-none text-[14px] text-[#1F1F1F] placeholder:text-[#9ca3af]"
+                        style={{ fontFamily: 'var(--font-family)' }}
+                      />
+                      {/* Show up to 3 badges on the right; overflow as +n */}
+                      {defAliases.length > 0 && (
+                        <div className="flex items-center gap-1 shrink-0">
+                          {defAliases.slice(0, 3).map(alias => (
+                            <span
+                              key={alias}
+                              className="flex items-center gap-0.5 px-1.5 py-0.5 text-[11px] bg-[#F2F2F2] border border-[#d1d5db] text-[#1F1F1F] whitespace-nowrap"
+                              style={{ fontFamily: 'var(--font-family)' }}
+                            >
+                              {alias}
+                              <button
+                                type="button"
+                                onMouseDown={(e) => e.preventDefault()}
+                                onClick={(e) => { e.stopPropagation(); setDefAliases(prev => prev.filter(a => a !== alias)); setIsDirty(true); }}
+                                className="text-[#9ca3af] hover:text-[#C5143D] leading-none ml-0.5"
+                              >&times;</button>
+                            </span>
+                          ))}
+                          {defAliases.length > 3 && (
+                            <span className="px-1.5 py-0.5 text-[11px] bg-[#F2F2F2] border border-[#d1d5db] text-[#6b7280] whitespace-nowrap" style={{ fontFamily: 'var(--font-family)' }}>
+                              +{defAliases.length - 3}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Definition Text */}
+                <div>
+                  <label className={labelStyle} style={{ fontFamily: 'var(--font-family)' }}>
+                    Definition Text {!isViewMode && <span className="text-[#C5143D]">*</span>}
+                  </label>
+                  {!isViewMode && <RichTextFieldHeader />}
+                  <textarea
+                    value={body}
+                    onChange={(e) => { if (!isViewMode) { setBody(e.target.value); setIsDirty(true); setIsValidated(false); } }}
+                    readOnly={isViewMode}
+                    rows={10}
+                    placeholder={isViewMode ? '' : bodyPlaceholder}
+                    className={activeInputStyle}
+                    style={{
+                      borderRadius: '0px',
+                      fontFamily: 'var(--font-family)',
+                      fontSize: '14px',
+                      resize: isViewMode ? 'none' : 'vertical',
+                      lineHeight: '1.6',
+                      borderTop: isViewMode ? undefined : 'none',
+                    }}
+                  />
+                </div>
+              </>
             ) : (
-              /* Default body text for all other types */
+              /* Default body text for LOV, TEC, SYS */
               <div>
                 <label className={labelStyle} style={{ fontFamily: 'var(--font-family)' }}>
                   {bodyLabel} {!isViewMode && <span className="text-[#C5143D]">*</span>}
                 </label>
-                {!isViewMode && itemType === 'DEF' && <RichTextFieldHeader />}
                 <textarea
                   value={body}
                   onChange={(e) => {
@@ -657,7 +789,6 @@ export function FoundationEditor() {
                     fontSize: '14px',
                     resize: isViewMode ? 'none' : 'vertical',
                     lineHeight: '1.6',
-                    borderTop: (!isViewMode && itemType === 'DEF') ? 'none' : undefined,
                   }}
                 />
               </div>
@@ -666,7 +797,8 @@ export function FoundationEditor() {
         </div>
         </div>
 
-        {/* Metadata side panel */}
+        {/* Metadata side panel — hidden for ATT (Descriptive Metadata) */}
+        {itemType !== 'ATT' && (
         <div className="w-[280px] min-w-[280px] border-l border-[#d1d5db] bg-[#FAFAFA] flex flex-col overflow-hidden">
           {/* Panel body */}
           <div className="flex-1 overflow-y-auto" style={{ fontFamily: "'DM Sans', sans-serif" }}>
@@ -802,6 +934,7 @@ export function FoundationEditor() {
             </div>
           </div>
         </div>
+        )}
       </div>
     </div>
   );

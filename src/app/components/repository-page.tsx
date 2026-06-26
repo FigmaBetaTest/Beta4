@@ -829,7 +829,7 @@ function FoundationQuickPreviewPanel({ item, onClose, onView, onEdit }: {
   const MetaSysRow = ({ label, value }: { label: string; value: React.ReactNode }) => (
     <div className="flex items-start gap-2 py-1.5 border-b border-[#f3f4f6] last:border-0">
       <span className="text-[11px] text-[#9ca3af] shrink-0" style={{ width: '100px' }}>{label}</span>
-      <span className="text-[12px] text-[#1F1F1F] flex-1 break-all">{value}</span>
+      <span className="text-[12px] text-[#1F1F1F] flex-1 truncate">{value}</span>
     </div>
   );
 

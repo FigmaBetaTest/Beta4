@@ -26,6 +26,8 @@ export interface FoundationItem {
   body?: string;
   crossReferences?: string[];
   usedIn?: string[];
+  definedTerm?: string;
+  aliases?: string[];
   // GV
   valueType?: string;
   listSource?: string;
