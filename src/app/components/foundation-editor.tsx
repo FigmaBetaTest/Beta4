@@ -5,7 +5,7 @@ import {
   AlignLeft, AlignCenter, AlignRight,
   ListOrdered, List, ChevronDown, Edit3,
 } from 'lucide-react';
-import { foundationTypeLabels, dynamicFoundationItems, riskCodes, cobOptions, jurisdictionOptions, type FoundationType } from './mock-data';
+import { foundationTypeLabels, dynamicFoundationItems, foundationItems, riskCodes, cobOptions, jurisdictionOptions, type FoundationType } from './mock-data';
 import { StatusBadge } from './type-badge';
 import { ConditionCodeEditor } from './condition-code-editor';
 import { toast } from 'sonner';
@@ -125,7 +125,9 @@ export function FoundationEditor() {
   const isNew = searchParams.get('isNew') === 'true';
   const [isViewMode, setIsViewMode] = useState(searchParams.get('mode') === 'view');
 
-  const existingItem = dynamicFoundationItems.find(i => i.id === id);
+  const existingItem =
+    dynamicFoundationItems.find(i => i.id === id) ??
+    foundationItems.find(i => i.id === id);
   const typeParam = searchParams.get('type') as FoundationType | null;
   const itemType: FoundationType = existingItem?.type ?? typeParam ?? 'DEF';
   const targetTab = itemType === 'ATT' ? 'metadata' : 'foundations';
