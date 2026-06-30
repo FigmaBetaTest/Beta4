@@ -580,7 +580,12 @@ export function RepositoryPage() {
                             <td className="px-4 py-3 text-[13px] text-[#1F1F1F] max-w-0 truncate">{item.name}</td>
                             {!isMetadataTab && (
                               <td className="px-4 py-3 max-w-0 overflow-hidden">
-                                <span className="inline-block px-1.5 py-0.5 text-[11px] font-mono bg-[#F2F2F2] text-[#6b7280] truncate">{item.type}</span>
+                                <span
+                                  className={`inline-block px-1.5 py-0.5 text-[11px] font-mono text-[#6b7280] truncate border ${item.format === 'analogue' ? 'border-dashed border-[#9ca3af]' : 'bg-[#F2F2F2] border-transparent'}`}
+                                  style={item.format === 'analogue' ? { backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(0,0,0,0.06) 3px, rgba(0,0,0,0.06) 4px)', backgroundColor: '#F2F2F2' } : undefined}
+                                >
+                                  {item.type}
+                                </span>
                               </td>
                             )}
                             <td className="px-4 py-3 text-[13px] text-[#6b7280] max-w-0 truncate">{item.version}</td>
@@ -656,8 +661,9 @@ export function RepositoryPage() {
           allowedTypes={['DEF', 'VAR', 'LOV', 'TEC', 'SYS']}
           onClose={() => setShowCreateFoundDialog(false)}
           onCreate={(newItem) => {
+            dynamicFoundationItems.push(newItem);
             setShowCreateFoundDialog(false);
-            navigate(`/foundation-editor/new?type=${newItem.type}&isNew=true`);
+            navigate(`/foundation-editor/${newItem.id}?isNew=true`);
           }}
         />
       )}
@@ -682,13 +688,15 @@ function FoundationRowActions({ item, onView, onEdit, onWithdraw, onDelete }: {
       >
         <Eye size={14} className="text-[#6b7280]" />
       </button>
-      <button
-        onClick={() => onEdit(item)}
-        className="p-1.5 hover:bg-[#F2F2F2] transition-colors"
-        title="Edit"
-      >
-        <Edit3 size={14} className="text-[#6b7280]" />
-      </button>
+      {item.format !== 'analogue' && (
+        <button
+          onClick={() => onEdit(item)}
+          className="p-1.5 hover:bg-[#F2F2F2] transition-colors"
+          title="Edit"
+        >
+          <Edit3 size={14} className="text-[#6b7280]" />
+        </button>
+      )}
       <div className="relative">
         <button
           onClick={() => setMenuOpen(o => !o)}
@@ -873,13 +881,15 @@ function FoundationQuickPreviewPanel({ item, onClose, onView, onEdit }: {
           >
             <Eye size={14} /> View
           </button>
-          <button
-            onClick={() => onEdit(item)}
-            className="flex-1 flex items-center justify-center gap-1.5 bg-[#C5143D] text-white px-3 py-2 text-[14px] hover:bg-[#F2F2F2] hover:text-[#C5143D] transition-all duration-200"
-            style={{ borderRadius: '0px' }}
-          >
-            <Edit3 size={14} /> Edit
-          </button>
+          {item.format !== 'analogue' && (
+            <button
+              onClick={() => onEdit(item)}
+              className="flex-1 flex items-center justify-center gap-1.5 bg-[#C5143D] text-white px-3 py-2 text-[14px] hover:bg-[#F2F2F2] hover:text-[#C5143D] transition-all duration-200"
+              style={{ borderRadius: '0px' }}
+            >
+              <Edit3 size={14} /> Edit
+            </button>
+          )}
         </div>
         {usedInRefs.length > 0 && (
           <div className="border-t border-[#d1d5db] pt-3">
@@ -989,6 +999,7 @@ function CreateFoundationDialog({ onClose, onCreate, allowedTypes }: {
 
   const handleCreate = () => {
     const today = new Date().toISOString().split('T')[0];
+    const isGuidanceType = selectedType === 'TEC' || selectedType === 'SYS';
     const newItem: FoundationItem = {
       id: `found-new-${Date.now()}`,
       name: title.trim(),
@@ -998,6 +1009,7 @@ function CreateFoundationDialog({ onClose, onCreate, allowedTypes }: {
       lastModified: today,
       owner: 'R. Pyke',
       usages: 0,
+      format: isGuidanceType ? (objectFormat === 'analog' ? 'analogue' : 'digital') : undefined,
       riskCodes: selectedRiskCodes.length > 0 ? selectedRiskCodes : undefined,
       cob: cob || undefined,
       jurisdictions: selectedJurisdictions.length > 0 ? selectedJurisdictions : undefined,
@@ -1124,12 +1136,14 @@ function CreateFoundationDialog({ onClose, onCreate, allowedTypes }: {
                     ) : (
                       <div className="text-center">
                         <p className="text-[14px] text-[#1F1F1F]">Click to upload or drag and drop</p>
-                        <p className="text-[12px] text-[#9ca3af]">PDF, DOCX, DOC (max. 50MB)</p>
+                        <p className="text-[12px] text-[#9ca3af]">
+                          {selectedType === 'TEC' ? 'PDF, DOCX, DOC (max. 50MB)' : 'Any format (max. 50MB)'}
+                        </p>
                       </div>
                     )}
                     <input
                       type="file"
-                      accept=".pdf,.docx,.doc"
+                      accept={selectedType === 'TEC' ? '.pdf,.docx,.doc' : undefined}
                       className="hidden"
                       onChange={(e) => setUploadedFile(e.target.files?.[0] || null)}
                     />

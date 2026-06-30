@@ -3,7 +3,7 @@ import { useParams, useNavigate, useSearchParams } from 'react-router';
 import {
   ArrowLeft, FileCheck, Save, Send, Loader2, Plus,
   AlignLeft, AlignCenter, AlignRight,
-  ListOrdered, List, ChevronDown, Edit3,
+  ListOrdered, List, ChevronDown, Edit3, FileText,
 } from 'lucide-react';
 import { foundationTypeLabels, dynamicFoundationItems, foundationItems, riskCodes, cobOptions, jurisdictionOptions, type FoundationType } from './mock-data';
 import { StatusBadge } from './type-badge';
@@ -96,8 +96,8 @@ const BODY_LABELS: Record<FoundationType, string> = {
   VAR: 'Variable Expression',
   LOV: 'Values',
   ATT: 'Metadata Description',
-  TEC: 'Technical Content',
-  SYS: 'System Content',
+  TEC: 'Guidance Content',
+  SYS: 'Guidance Content',
 };
 
 const TITLE_PLACEHOLDERS: Record<FoundationType, string> = {
@@ -130,6 +130,8 @@ export function FoundationEditor() {
     foundationItems.find(i => i.id === id);
   const typeParam = searchParams.get('type') as FoundationType | null;
   const itemType: FoundationType = existingItem?.type ?? typeParam ?? 'DEF';
+  const itemFormat = existingItem?.format ?? 'digital';
+  const isAnalogue = itemFormat === 'analogue';
   const targetTab = itemType === 'ATT' ? 'metadata' : 'foundations';
   const typeLabel = foundationTypeLabels[itemType];
   const bodyLabel = BODY_LABELS[itemType];
@@ -151,7 +153,6 @@ export function FoundationEditor() {
   const [gvType, setGvType] = useState(existingItem?.valueType ?? '');
   const [gvTypespecifica, setGvTypespecifica] = useState(existingItem?.listSource ?? '');
   const [gvWolExpression, setGvWolExpression] = useState(existingItem?.wolExpression ?? '');
-  const [gvSysGuidanceMode, setGvSysGuidanceMode] = useState<'' | 'none' | 'embedded' | 'linked'>(existingItem?.systemGuidanceMode ?? '');
   const [gvSystemGuidance, setGvSystemGuidance] = useState(existingItem?.systemGuidance ?? '');
 
   // DM-specific fields
@@ -221,7 +222,6 @@ export function FoundationEditor() {
       valueType: gvType || undefined,
       listSource: gvTypespecifica || undefined,
       wolExpression: gvWolExpression || undefined,
-      systemGuidanceMode: gvSysGuidanceMode || undefined,
       systemGuidance: gvSystemGuidance || undefined,
     } : {};
     const dmFields = itemType === 'ATT' ? {
@@ -370,15 +370,13 @@ export function FoundationEditor() {
               >
                 <Save size={13} /> Save
               </button>
-              {!isNew && (
-                <button
-                  onClick={handleSubmit}
-                  className="flex items-center gap-1.5 px-[40px] py-[8px] text-[14px] bg-[#C5143D] text-white hover:bg-[#F2F2F2] hover:text-[#C5143D] transition-all duration-200 cursor-pointer"
-                  style={{ borderRadius: '0px' }}
-                >
-                  <Send size={13} /> Submit
-                </button>
-              )}
+              <button
+                onClick={isNew ? handleCreate : handleSubmit}
+                className="flex items-center gap-1.5 px-[40px] py-[8px] text-[14px] bg-[#C5143D] text-white hover:bg-[#F2F2F2] hover:text-[#C5143D] transition-all duration-200 cursor-pointer"
+                style={{ borderRadius: '0px' }}
+              >
+                <Send size={13} /> Submit
+              </button>
             </>
           )}
         </div>
@@ -386,7 +384,18 @@ export function FoundationEditor() {
 
       {/* Content */}
       <div className="flex-1 min-h-0 flex overflow-hidden bg-white">
-        {/* Main form */}
+        {/* Left: form (digital) or analogue placeholder */}
+        {isAnalogue ? (
+          <div className="flex-1 flex flex-col bg-[#FAFAFA]">
+            <div className="flex flex-col items-center justify-center flex-1 gap-3 p-12 text-center">
+              <FileText size={40} className="text-[#d1d5db]" />
+              <p className="text-[15px] text-[#1F1F1F]" style={{ fontFamily: 'var(--font-family)' }}>Analogue Document</p>
+              <p className="text-[13px] text-[#6b7280] max-w-[420px]" style={{ fontFamily: 'var(--font-family)' }}>
+                This {typeLabel} is in analogue format. Once a document is uploaded and processed, it will be rendered here as a PDF viewer.
+              </p>
+            </div>
+          </div>
+        ) : (
         <div className="flex-1 overflow-y-auto">
           <div className="max-w-[620px] mx-auto py-12 px-6">
           <h2
@@ -525,58 +534,23 @@ export function FoundationEditor() {
                   <label className={labelStyle} style={{ fontFamily: 'var(--font-family)' }}>
                     System Guidance
                   </label>
-
-                  {/* Step 1: Select guidance type */}
                   <select
-                    value={gvSysGuidanceMode}
-                    onChange={(e) => {
-                      if (!isViewMode) {
-                        setGvSysGuidanceMode(e.target.value as '' | 'none' | 'embedded' | 'linked');
-                        setGvSystemGuidance('');
-                        setIsDirty(true);
-                      }
-                    }}
+                    value={gvSystemGuidance}
+                    onChange={(e) => { if (!isViewMode) { setGvSystemGuidance(e.target.value); setIsDirty(true); } }}
                     disabled={isViewMode}
                     className={activeInputStyle}
                     style={{ borderRadius: '0px', fontFamily: 'var(--font-family)', fontSize: '14px' }}
                   >
-                    <option value="">Select type</option>
-                    <option value="none">None</option>
-                    <option value="embedded">Embedded</option>
-                    <option value="linked">Linked</option>
+                    <option value="">Select System Guidance...</option>
+                    {[...foundationItems, ...dynamicFoundationItems]
+                      .filter(i => i.type === 'SYS')
+                      .map(i => (
+                        <option key={i.id} value={i.id}>
+                          {i.name} — {i.format === 'analogue' ? 'Component Variant (Analog)' : 'Note Variant (Digital)'}
+                        </option>
+                      ))
+                    }
                   </select>
-
-                  {/* Step 2a: Embedded → rich-text field */}
-                  {gvSysGuidanceMode === 'embedded' && (
-                    <div className="mt-3">
-                      {!isViewMode && <RichTextFieldHeader />}
-                      <textarea
-                        value={gvSystemGuidance}
-                        onChange={(e) => { if (!isViewMode) { setGvSystemGuidance(e.target.value); setIsDirty(true); } }}
-                        readOnly={isViewMode}
-                        rows={5}
-                        placeholder={isViewMode ? '' : 'Enter embedded system guidance...'}
-                        className={activeInputStyle}
-                        style={{ borderRadius: '0px', fontFamily: 'var(--font-family)', fontSize: '14px', resize: isViewMode ? 'none' : 'vertical', lineHeight: '1.6', borderTop: isViewMode ? undefined : 'none' }}
-                      />
-                    </div>
-                  )}
-
-                  {/* Step 2b: Linked → dropdown of SYS foundation objects */}
-                  {gvSysGuidanceMode === 'linked' && (
-                    <select
-                      value={gvSystemGuidance}
-                      onChange={(e) => { if (!isViewMode) { setGvSystemGuidance(e.target.value); setIsDirty(true); } }}
-                      disabled={isViewMode}
-                      className={`${activeInputStyle} mt-3`}
-                      style={{ borderRadius: '0px', fontFamily: 'var(--font-family)', fontSize: '14px' }}
-                    >
-                      <option value="">Select System Guidance object...</option>
-                      <option value="sys-001">Version Numbering Convention — v1.0.0 · PUBLISHED</option>
-                      <option value="sys-drafting">Drafting Standards — v2.1.0 · PUBLISHED</option>
-                      <option value="sys-approval">Approval Workflow — v1.3.0 · PUBLISHED</option>
-                    </select>
-                  )}
                 </div>
               </>
             ) : itemType === 'ATT' ? (
@@ -798,9 +772,10 @@ export function FoundationEditor() {
           </div>
         </div>
         </div>
+        )}
 
-        {/* Metadata side panel — hidden for ATT (Descriptive Metadata) */}
-        {itemType !== 'ATT' && (
+        {/* Metadata side panel — shown for non-ATT and always for analogue */}
+        {(isAnalogue || itemType !== 'ATT') && (
         <div className="w-[280px] min-w-[280px] border-l border-[#d1d5db] bg-[#FAFAFA] flex flex-col overflow-hidden">
           {/* Panel body */}
           <div className="flex-1 overflow-y-auto" style={{ fontFamily: "'DM Sans', sans-serif" }}>
@@ -932,6 +907,39 @@ export function FoundationEditor() {
                     />
                   )}
                 </div>
+
+                {/* System Guidance — VAR only, inline in Descriptive Metadata */}
+                {itemType === 'VAR' && gvSystemGuidance && (() => {
+                  const sysItem = [...foundationItems, ...dynamicFoundationItems].find(i => i.id === gvSystemGuidance);
+                  if (!sysItem) return null;
+                  const isDigital = sysItem.format !== 'analogue';
+                  return (
+                    <div className="group relative">
+                      <p className="text-[10px] text-[#9ca3af] mb-1" style={{ fontFamily: 'var(--font-family)' }}>System Guidance</p>
+                      {isDigital ? (
+                        <>
+                          <span className="text-[12px] text-[#1F1F1F]" style={{ fontFamily: 'var(--font-family)' }}>{sysItem.name}</span>
+                          {sysItem.summary && (
+                            <div className="absolute left-0 right-0 z-10 hidden group-hover:block top-full mt-1 bg-white border border-[#d1d5db] shadow-md px-3 py-2.5">
+                              <p className="text-[12px] text-[#6b7280] leading-snug" style={{ fontFamily: 'var(--font-family)' }}>{sysItem.summary}</p>
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <a
+                          href={`/foundation-editor/${sysItem.id}?mode=view`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[12px] text-[#2563eb] hover:underline inline-flex items-center gap-1"
+                          style={{ fontFamily: 'var(--font-family)' }}
+                        >
+                          {sysItem.name}
+                          <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4.5 1.5H2a.5.5 0 0 0-.5.5v8a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5V7.5"/><path d="M7.5 1.5H10.5V4.5"/><path d="M10.5 1.5 6 6"/></svg>
+                        </a>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
             </div>
           </div>
