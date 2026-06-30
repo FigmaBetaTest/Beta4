@@ -581,8 +581,8 @@ export function RepositoryPage() {
                             {!isMetadataTab && (
                               <td className="px-4 py-3 max-w-0 overflow-hidden">
                                 <span
-                                  className={`inline-block px-1.5 py-0.5 text-[11px] font-mono text-[#6b7280] truncate border ${item.format === 'analogue' ? 'border-dashed border-[#9ca3af]' : 'bg-[#F2F2F2] border-transparent'}`}
-                                  style={item.format === 'analogue' ? { backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(0,0,0,0.06) 3px, rgba(0,0,0,0.06) 4px)', backgroundColor: '#F2F2F2' } : undefined}
+                                  className="inline-block px-1.5 py-0.5 text-[11px] font-mono bg-[#F2F2F2] text-[#6b7280] truncate"
+                                  style={item.format === 'analogue' ? { backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(0,0,0,0.06) 3px, rgba(0,0,0,0.06) 4px)' } : undefined}
                                 >
                                   {item.type}
                                 </span>
